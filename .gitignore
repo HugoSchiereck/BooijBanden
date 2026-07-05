@@ -1,0 +1,12 @@
+# Database inloggegevens (NOOIT in Git pushen!)
+db.php
+
+# Test- en setup bestanden uitsluiten van Git
+setup_admin.php
+seed.php
+
+# Systeem- en editor bestanden (optioneel, maar netjes)
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
