@@ -9,227 +9,315 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$search = trim($_GET['search'] ?? '');
-$rim = $_GET['rim'] ?? '';
-$season = $_GET['season'] ?? '';
-$status = $_GET['status'] ?? '';
+$msg = "";
+$error = "";
 
-$error = '';
-$tires = [];
-
-// Query opbouwen
-// Let op: we gebruiken MAX() en GROUP_CONCAT() om alles van een set in één rij te bundelen!
-$sql = "
-    SELECT 
-        MAX(t.set_id) as set_id,
-        GROUP_CONCAT(t.qr_id ORDER BY t.id ASC SEPARATOR ',') as all_qr_ids,
-        MAX(t.brand) as brand, 
-        MAX(t.model) as model, 
-        MAX(t.season) as season, 
-        MAX(t.width) as width, 
-        MAX(t.ratio) as ratio, 
-        MAX(t.rim) as rim, 
-        MAX(t.is_new) as is_new, 
-        GROUP_CONCAT(COALESCE(t.tread_depth, 'Nieuw') ORDER BY t.id ASC SEPARATOR '|') as all_treads,
-        MAX(t.status) as status,
-        MAX(l.code) as location_code,
-        COUNT(t.id) as aantal_banden,
-        MAX(t.price) as piece_price,
-        SUM(t.price) as total_price
-    FROM tires t
-    LEFT JOIN locations l ON t.location_id = l.id
-    WHERE t.status != 'uitgeboekt'
-";
-$params = [];
-
-// Slimme zoekfunctie: splitst op spaties zodat "Michelin 17" ook werkt
-if ($search !== '') {
-    $terms = explode(' ', $search);
-    foreach ($terms as $term) {
-        $term = trim($term);
-        if ($term === '') continue;
+// --- Actie: Band Bewerken (Prijs / Locatie) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_tire'])) {
+    $qr_id = trim($_POST['qr_id']);
+    $price = (float)$_POST['price'];
+    $location_id = trim($_POST['location_id']);
+    
+    // Als locatie leeg is, sla dit op als NULL in database
+    $location_id = $location_id === '' ? null : $location_id;
+    
+    try {
+        $stmt = $pdo->prepare("UPDATE tires SET price = ?, location_id = ? WHERE qr_id = ?");
+        $stmt->execute([$price, $location_id, $qr_id]);
         
-        $sql .= " AND (t.brand LIKE ? OR t.model LIKE ? OR t.qr_id LIKE ? OR l.code LIKE ? 
-                  OR CONCAT(t.width, '/', t.ratio, ' R', t.rim) LIKE ? 
-                  OR CONCAT(t.width, '/', t.ratio, 'R', t.rim) LIKE ?
-                  OR CONCAT(t.width, ' ', t.ratio, ' ', t.rim) LIKE ?
-                  OR CONCAT(t.width, t.ratio, t.rim) LIKE ?)";
-        for ($i = 0; $i < 8; $i++) { $params[] = "%$term%"; }
+        // Log de wijziging
+        $pdo->prepare("INSERT INTO tire_logs (qr_id, user_id, action) VALUES (?, ?, ?)")->execute([$qr_id, $_SESSION['user_id'], "Gewijzigd via Voorraadbeheer (Prijs/Locatie)"]);
+        
+        $msg = "Band " . htmlspecialchars($qr_id) . " is succesvol bijgewerkt!";
+    } catch (Exception $e) {
+        $error = "Fout bij bijwerken: " . $e->getMessage();
     }
 }
 
-if ($rim) { $sql .= " AND t.rim = ?"; $params[] = $rim; }
-if ($season) { $sql .= " AND t.season = ?"; $params[] = $season; }
-if ($status) { $sql .= " AND t.status = ?"; $params[] = $status; }
-
-$sql .= " GROUP BY COALESCE(CONCAT('set_', t.set_id), CONCAT('tire_', t.id))";
-$sql .= " ORDER BY MAX(t.created_at) DESC";
-
-try {
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $tires = $stmt->fetchAll();
-} catch (PDOException $e) {
-    $error = "Databasefout bij ophalen voorraad: " . $e->getMessage();
+// --- Actie: Band Uitboeken (Verwijderen uit voorraad) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_tire'])) {
+    $qr_id = trim($_POST['qr_id']);
+    
+    try {
+        $stmtCheck = $pdo->prepare("SELECT status FROM tires WHERE qr_id = ?");
+        $stmtCheck->execute([$qr_id]);
+        $currentStatus = $stmtCheck->fetchColumn();
+        
+        if ($currentStatus === 'voorraad') {
+            $stmt = $pdo->prepare("UPDATE tires SET status = 'uitgeboekt', location_id = NULL WHERE qr_id = ?");
+            $stmt->execute([$qr_id]);
+            
+            // Log de actie
+            $pdo->prepare("INSERT INTO tire_logs (qr_id, user_id, action) VALUES (?, ?, ?)")->execute([$qr_id, $_SESSION['user_id'], "Handmatig uitgeboekt via Voorraadbeheer"]);
+            
+            $msg = "Band " . htmlspecialchars($qr_id) . " is veilig uitgeboekt.";
+        } else {
+            $error = "Deze band kan niet worden uitgeboekt omdat de status '$currentStatus' is.";
+        }
+    } catch (Exception $e) {
+        $error = "Fout bij uitboeken: " . $e->getMessage();
+    }
 }
 
-$pageTitle = "Voorraad";
+// --- Statistieken ophalen ---
+$stat_voorraad = $pdo->query("SELECT COUNT(*) FROM tires WHERE status = 'voorraad'")->fetchColumn();
+$stat_gereserveerd = $pdo->query("SELECT COUNT(*) FROM tires WHERE status IN ('gereserveerd', 'gemonteerd')")->fetchColumn();
+$stat_waarde = $pdo->query("SELECT SUM(price) FROM tires WHERE status = 'voorraad'")->fetchColumn();
+
+// --- Filters en Zoeken verwerken ---
+$search = isset($_GET['q']) ? trim($_GET['q']) : '';
+$status_filter = isset($_GET['status']) ? $_GET['status'] : 'voorraad';
+
+$sql = "SELECT * FROM tires WHERE 1=1";
+$params = [];
+
+if ($status_filter !== 'alle') {
+    $sql .= " AND status = ?";
+    $params[] = $status_filter;
+}
+
+if (!empty($search)) {
+    $sql .= " AND (qr_id LIKE ? OR brand LIKE ? OR model LIKE ? OR CONCAT(width, '/', ratio, 'R', rim) LIKE ?)";
+    $search_param = "%$search%";
+    $params = array_merge($params, [$search_param, $search_param, $search_param, $search_param]);
+}
+
+$sql .= " ORDER BY created_at DESC LIMIT 100";
+
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
+$tires = $stmt->fetchAll();
+
+$pageTitle = "Voorraadbeheer Dashboard";
 include 'header.php';
 ?>
 
-<main class="max-w-7xl mx-auto py-4 sm:py-8 px-2 sm:px-6 lg:px-8">
-    <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-3">
+<main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+    <!-- Pagina Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-            <h1 class="text-2xl sm:text-3xl font-bold text-slate-800">Voorraad</h1>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Voorraadbeheer</h1>
+            <p class="text-slate-500 text-sm mt-1">Beheer je magazijn, wijzig locaties en bekijk voorraadstatistieken.</p>
         </div>
-        <!-- Compacte knop op mobiel -->
-        <a href="invoer.php" class="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold py-2 px-4 rounded-lg shadow-sm transition-colors">
-            + Nieuwe Invoer
-        </a>
+        <div class="flex gap-3">
+            <!-- Voor nu linken deze nog even door naar nergens, we kunnen hier later acties aanhangen -->
+            <a href="#" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-sm transition-colors text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                Nieuwe Band
+            </a>
+            <a href="#" class="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2.5 px-4 rounded-lg shadow-sm transition-colors text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                CSV Import
+            </a>
+        </div>
     </div>
 
+    <!-- Meldingen -->
+    <?php if ($msg): ?>
+        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 mb-6 rounded-r-lg shadow-sm">
+            <p class="text-emerald-800 font-bold text-sm flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                <?php echo $msg; ?>
+            </p>
+        </div>
+    <?php endif; ?>
     <?php if ($error): ?>
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded shadow-sm text-red-800 text-sm font-bold">
-            <?php echo htmlspecialchars($error); ?>
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg shadow-sm">
+            <p class="text-red-800 font-bold text-sm"><?php echo $error; ?></p>
         </div>
     <?php endif; ?>
 
-    <!-- Compact Filter Formulier -->
-    <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200 mb-4 sm:mb-6">
-        <form method="GET" action="" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
-            <div class="md:col-span-2">
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Zoeken</label>
-                <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Michelin, 8B4 of 275/35R18" class="w-full border border-slate-300 rounded-md py-1.5 px-3 text-sm focus:ring-2 focus:ring-blue-500">
+    <!-- Statistieken (KPI's) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+            <div class="bg-blue-100 p-4 rounded-xl text-blue-600">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
             </div>
             <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Inch</label>
-                <input type="number" name="rim" value="<?php echo htmlspecialchars($rim); ?>" placeholder="Alle maten" class="w-full border border-slate-300 rounded-md py-1.5 px-3 text-sm focus:ring-2 focus:ring-blue-500">
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Vrij op voorraad</p>
+                <p class="text-3xl font-black text-slate-800"><?php echo number_format($stat_voorraad, 0, ',', '.'); ?></p>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+            <div class="bg-amber-100 p-4 rounded-xl text-amber-600">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
             <div>
-                <label class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1">Seizoen</label>
-                <select name="season" class="w-full border border-slate-300 rounded-md py-1.5 px-3 text-sm bg-white focus:ring-2 focus:ring-blue-500">
-                    <option value="">Alles</option>
-                    <option value="Zomer" <?php echo $season == 'Zomer' ? 'selected' : ''; ?>>Zomer</option>
-                    <option value="Winter" <?php echo $season == 'Winter' ? 'selected' : ''; ?>>Winter</option>
-                    <option value="All Season" <?php echo $season == 'All Season' ? 'selected' : ''; ?>>All Season</option>
-                </select>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Gereserveerd / Kassa</p>
+                <p class="text-3xl font-black text-slate-800"><?php echo number_format($stat_gereserveerd, 0, ',', '.'); ?></p>
+            </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex items-center gap-4">
+            <div class="bg-emerald-100 p-4 rounded-xl text-emerald-600">
+                <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
             <div>
-                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-1.5 px-3 text-sm rounded-md shadow-sm transition-colors">
-                    Filteren
-                </button>
+                <p class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">Waarde Voorraad</p>
+                <p class="text-3xl font-black text-slate-800">&euro;<?php echo number_format($stat_waarde, 2, ',', '.'); ?></p>
             </div>
+        </div>
+    </div>
+
+    <!-- Filter & Zoekbalk -->
+    <div class="bg-white rounded-t-2xl shadow-sm border-t border-l border-r border-slate-200 p-5 flex flex-col md:flex-row gap-4 justify-between items-center">
+        <form method="GET" class="w-full md:w-auto flex flex-col md:flex-row gap-4 flex-grow max-w-3xl">
+            <div class="relative flex-grow">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </div>
+                <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>" placeholder="Zoek op QR, merk, of maat (bijv. 205/55R16)..." class="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium text-slate-800">
+            </div>
+            <select name="status" onchange="this.form.submit()" class="bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="voorraad" <?php if($status_filter == 'voorraad') echo 'selected'; ?>>Voorraad</option>
+                <option value="gereserveerd" <?php if($status_filter == 'gereserveerd') echo 'selected'; ?>>Gereserveerd</option>
+                <option value="verkocht" <?php if($status_filter == 'verkocht') echo 'selected'; ?>>Verkocht / Historie</option>
+                <option value="alle" <?php if($status_filter == 'alle') echo 'selected'; ?>>Alles tonen</option>
+            </select>
+            <noscript><button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Filter</button></noscript>
         </form>
     </div>
 
-    <!-- Compacte Results Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <!-- Data Tabel -->
+    <div class="bg-white shadow-sm border border-slate-200 rounded-b-2xl overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-slate-50">
                     <tr>
-                        <th class="px-3 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Set / QR</th>
-                        <th class="px-3 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Maat & Merk</th>
-                        <th class="px-3 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Staat & Profiel</th>
-                        <th class="px-3 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Locatie</th>
-                        <th class="px-3 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Prijs</th>
-                        <th class="px-3 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Actie</th>
+                        <th class="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">QR Code</th>
+                        <th class="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Maat & Merk</th>
+                        <th class="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Staat</th>
+                        <th class="px-6 py-4 text-left text-xs font-black text-slate-500 uppercase tracking-wider">Locatie</th>
+                        <th class="px-6 py-4 text-right text-xs font-black text-slate-500 uppercase tracking-wider">Prijs</th>
+                        <th class="px-6 py-4 text-right text-xs font-black text-slate-500 uppercase tracking-wider">Acties</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-slate-200">
-                    <?php if (count($tires) > 0): ?>
-                        <?php foreach ($tires as $tire): ?>
-                            <tr class="hover:bg-slate-50 transition-colors">
-                                
-                                <!-- Kolom 1: IDs en Set badges -->
-                                <td class="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">
-                                    <div class="mb-1">
-                                        <?php if ($tire['aantal_banden'] > 1): ?>
-                                            <span class="px-1.5 py-0.5 inline-flex text-[10px] sm:text-xs font-bold rounded bg-indigo-100 text-indigo-800">Set (<?php echo $tire['aantal_banden']; ?>x)</span>
-                                        <?php else: ?>
-                                            <span class="px-1.5 py-0.5 inline-flex text-[10px] sm:text-xs font-bold rounded bg-slate-100 text-slate-800">1x</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div class="flex flex-wrap gap-1 max-w-[100px] sm:max-w-[150px]">
-                                        <?php 
-                                        $qrs = explode(',', $tire['all_qr_ids']);
-                                        foreach($qrs as $q): 
-                                        ?>
-                                            <a href="detail.php?id=<?php echo htmlspecialchars($q); ?>" class="text-[9px] sm:text-[10px] font-mono bg-white border border-slate-300 text-slate-600 hover:border-blue-500 px-1 py-0.5 rounded shadow-sm">
-                                                <?php echo substr(htmlspecialchars($q), 0, 8); ?>..
-                                            </a>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </td>
-                                
-                                <!-- Kolom 2: Maat en Merk samengevoegd -->
-                                <td class="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">
-                                    <div class="font-black text-slate-900 text-sm sm:text-base"><?php echo $tire['width'].'/'.$tire['ratio'].' R'.$tire['rim']; ?></div>
-                                    <div class="font-bold text-slate-700 text-[10px] sm:text-xs mt-0.5"><?php echo htmlspecialchars($tire['brand']); ?></div>
-                                    <div class="text-[9px] sm:text-[10px] text-slate-500"><?php echo htmlspecialchars($tire['model']); ?></div>
-                                </td>
-                                
-                                <!-- Kolom 3: Alle profieldieptes! -->
-                                <td class="px-3 py-2 sm:px-4 sm:py-3 whitespace-normal">
-                                    <div class="text-[10px] sm:text-xs font-bold text-slate-500 mb-1 flex items-center gap-1">
-                                        <?php 
-                                        if($tire['season'] == 'Zomer') echo '☀️ Zomer';
-                                        elseif($tire['season'] == 'Winter') echo '❄️ Winter';
-                                        else echo '🌦️ All Season';
-                                        ?>
-                                    </div>
-                                    <div class="flex flex-wrap max-w-[120px] sm:max-w-[160px]">
-                                        <?php 
-                                        $treads = explode('|', $tire['all_treads']);
-                                        foreach($treads as $tr): 
-                                            $label = ($tr === 'Nieuw' || $tr === '') ? 'Nieuw' : $tr . 'mm';
-                                            $color = ($label === 'Nieuw') ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-100 text-slate-700 border-slate-200';
-                                        ?>
-                                            <span class="px-1 py-0.5 inline-block <?php echo $color; ?> border rounded text-[9px] sm:text-[10px] font-bold mr-1 mb-1">
-                                                <?php echo $label; ?>
-                                            </span>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </td>
-                                
-                                <!-- Kolom 4: Locatie -->
-                                <td class="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap">
-                                    <?php if ($tire['location_code']): ?>
-                                        <span class="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300 text-xs">
-                                            <?php echo htmlspecialchars($tire['location_code']); ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-[10px] sm:text-xs text-red-500 font-medium">--</span>
-                                    <?php endif; ?>
-                                </td>
-                                
-                                <!-- Kolom 5: PRIJZEN! -->
-                                <td class="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-right">
-                                    <div class="font-bold text-slate-800 text-xs sm:text-sm">
-                                        &euro; <?php echo number_format((float)$tire['piece_price'], 2, ',', '.'); ?> <span class="text-[9px] text-slate-400 font-normal">/st</span>
-                                    </div>
-                                    <?php if ($tire['aantal_banden'] > 1): ?>
-                                        <div class="font-black text-blue-700 text-xs sm:text-sm mt-0.5">
-                                            &euro; <?php echo number_format((float)$tire['total_price'], 2, ',', '.'); ?> <span class="text-[9px] text-blue-400 font-normal">/set</span>
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                
-                                <!-- Kolom 6: Actie -->
-                                <td class="px-3 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-right">
-                                    <a href="detail.php?id=<?php echo $qrs[0]; ?>" class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 sm:px-3 py-1 sm:py-2 rounded-md transition-colors text-[10px] sm:text-xs font-bold inline-block">
-                                        Open
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+                <tbody class="bg-white divide-y divide-slate-100">
+                    <?php if (empty($tires)): ?>
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-500 font-medium">
+                                Geen banden gevonden die voldoen aan deze filters.
+                            </td>
+                        </tr>
                     <?php else: ?>
-                        <tr><td colspan="6" class="px-6 py-8 text-center text-sm text-slate-500">Geen resultaten.</td></tr>
+                        <?php foreach($tires as $t): ?>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-3 whitespace-nowrap">
+                                <span class="font-mono text-sm font-bold text-slate-700 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                                    <?php echo htmlspecialchars($t['qr_id']); ?>
+                                </span>
+                            </td>
+                            <td class="px-6 py-3 whitespace-nowrap">
+                                <div class="text-sm font-black text-slate-800"><?php echo $t['width'].'/'.$t['ratio'].' R'.$t['rim']; ?></div>
+                                <div class="text-xs text-slate-500 font-medium"><?php echo htmlspecialchars($t['brand'] . ' ' . $t['model']); ?></div>
+                            </td>
+                            <td class="px-6 py-3 whitespace-nowrap">
+                                <?php if($t['is_new']): ?>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+                                        Nieuw
+                                    </span>
+                                <?php else: ?>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                                        <?php echo $t['tread_depth']; ?> mm
+                                    </span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-6 py-3 whitespace-nowrap">
+                                <?php if(!empty($t['location_id'])): ?>
+                                    <span class="text-sm font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-100">
+                                        <?php echo htmlspecialchars($t['location_id']); ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-sm text-slate-400 italic">Geen</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-black text-slate-900">
+                                &euro;<?php echo number_format($t['price'], 2, ',', '.'); ?>
+                            </td>
+                            <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
+                                
+                                <!-- Bewerk Knop -->
+                                <button type="button" 
+                                    onclick="openEditModal('<?php echo htmlspecialchars($t['qr_id']); ?>', '<?php echo $t['price']; ?>', '<?php echo htmlspecialchars($t['location_id'] ?? ''); ?>')" 
+                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-1.5 rounded transition-colors" 
+                                    title="Bewerk Prijs of Locatie">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </button>
+                                
+                                <!-- Verwijder / Uitboek Knop -->
+                                <?php if ($t['status'] === 'voorraad'): ?>
+                                <form method="POST" class="inline" onsubmit="return confirm('Weet je zeker dat je band <?php echo htmlspecialchars($t['qr_id']); ?> wilt uitboeken? De band wordt dan uit de actieve voorraad gehaald.');">
+                                    <input type="hidden" name="qr_id" value="<?php echo htmlspecialchars($t['qr_id']); ?>">
+                                    <button type="submit" name="delete_tire" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded transition-colors" title="Verwijderen / Uitboeken">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                    </button>
+                                </form>
+                                <?php endif; ?>
+
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>
+            
+            <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 text-xs text-slate-500 font-medium text-center">
+                * Weergave beperkt tot de laatste 100 resultaten. Gebruik de zoekbalk voor specifieke banden.
+            </div>
         </div>
     </div>
+
 </main>
+
+<!-- Modal voor Bewerken (Verborgen tot op geklikt wordt) -->
+<div id="editModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 flex justify-center items-center z-50 px-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-black text-slate-800">Band Bewerken</h3>
+            <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <form method="POST" class="p-6">
+            <input type="hidden" name="qr_id" id="modal_qr_id">
+            
+            <div class="mb-5">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">QR Code / Referentie</label>
+                <div id="modal_display_qr" class="font-mono text-sm font-bold text-slate-800 bg-slate-100 p-3 rounded border border-slate-200"></div>
+            </div>
+            
+            <div class="mb-5">
+                <label for="modal_price" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Verkoopprijs (&euro;)</label>
+                <input type="number" step="0.01" name="price" id="modal_price" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="mb-6">
+                <label for="modal_location" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Magazijnlocatie (Optioneel)</label>
+                <input type="text" name="location_id" id="modal_location" placeholder="Bijv. 5B10" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 font-bold uppercase text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors">Annuleren</button>
+                <button type="submit" name="edit_tire" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm">Opslaan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Simpel Javascript om de modal te openen en sluiten
+function openEditModal(qr, price, location) {
+    document.getElementById('modal_qr_id').value = qr;
+    document.getElementById('modal_display_qr').innerText = qr;
+    document.getElementById('modal_price').value = price;
+    document.getElementById('modal_location').value = location;
+    
+    document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+}
+</script>
 
 <?php include 'footer.php'; ?>
