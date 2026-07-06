@@ -146,9 +146,9 @@ include 'header.php';
             </div>
 
             <!-- Over Ons Sectie -->
-            <div class="bg-blue-50 rounded-3xl p-10 sm:p-12 border border-blue-100 shadow-sm">
-                <h2 class="text-3xl font-black text-slate-800 mb-6">Meer over ons</h2>
-                <div class="text-lg text-slate-700 leading-relaxed space-y-4">
+            <div class="bg-white rounded-3xl p-10 sm:p-12 shadow-md border border-slate-100">
+                <h2 class="text-2xl font-black text-slate-800 mb-6">Meer over ons</h2>
+                <div class="text-lg text-slate-600 leading-relaxed space-y-4">
                     <p>Bij Booij Banden B.V. staan we al jarenlang bekend om onze vakkennis, klantvriendelijkheid en betrouwbare service. Of het nu gaat om nieuwe banden of voordelige demo banden — wij helpen u veilig op weg.</p>
                     <p>Wij zijn een familiebedrijf met passie voor banden en techniek. Vanuit onze werkplaats in Culemborg bedienen we zowel particuliere als zakelijke klanten met deskundige bandenservice.</p>
                     <p>Onze diensten bestaan uit het monteren van banden, balanceren van wielen en het repareren van lekke of beschadigde banden.</p>
@@ -161,7 +161,7 @@ include 'header.php';
                 <div class="grid grid-cols-1 md:grid-cols-2">
                     
                     <!-- Contact -->
-                    <div class="bg-slate-50 p-10 sm:p-12">
+                    <div class="bg-slate-50 p-10 sm:p-12 border-b md:border-b-0 md:border-r border-slate-100">
                         <h2 class="text-2xl font-black text-slate-800 mb-8">Contact & Locatie</h2>
                         <ul class="space-y-6 text-slate-600 text-lg">
                             <li class="flex items-start">
