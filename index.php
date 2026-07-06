@@ -41,7 +41,7 @@ if (!$tire) {
         $r = $_GET['r'] ?? '';
         $i = $_GET['i'] ?? '';
         
-        // We groeperen identieke banden, zodat de klant "4 stuks" ziet in plaats van 4 losse regels
+        // We groeperen identieke banden
         $sql = "SELECT brand, model, season, width, ratio, rim, is_new, tread_depth, price, COUNT(*) as available_count 
                 FROM tires 
                 WHERE status = 'voorraad'";
@@ -63,105 +63,118 @@ $pageTitle = $tire ? "Specificaties: " . $tire['brand'] . " " . $tire['model'] :
 include 'header.php';
 ?>
 
-<main class="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+<main class="w-full bg-slate-50 min-h-screen">
 
     <?php if ($tire): ?>
         
-        <div class="mb-8 text-center">
-            <h1 class="text-4xl sm:text-5xl font-black text-slate-800 mb-2 uppercase tracking-tight">
-                <?php echo htmlspecialchars($tire['brand']); ?>
-            </h1>
-            <h2 class="text-2xl text-slate-500 font-semibold mb-6">
-                <?php echo htmlspecialchars($tire['model']); ?>
-            </h2>
-            
-            <?php if ($set_count > 1): ?>
-                <span class="inline-block bg-blue-100 text-blue-800 font-black px-6 py-2 rounded-full text-lg border-2 border-blue-200 mb-6 shadow-sm">
-                    Verkocht als Set van <?php echo $set_count; ?> Banden
-                </span>
-            <?php endif; ?>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mb-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+        <!-- ========================================== -->
+        <!-- DETAILWEERGAVE (Als een band is gescand) -->
+        <!-- ========================================== -->
+        <div class="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="mb-8 text-center">
+                <h1 class="text-4xl sm:text-5xl font-black text-slate-800 mb-2 uppercase tracking-tight">
+                    <?php echo htmlspecialchars($tire['brand']); ?>
+                </h1>
+                <h2 class="text-2xl text-slate-500 font-semibold mb-6">
+                    <?php echo htmlspecialchars($tire['model']); ?>
+                </h2>
                 
-                <div class="p-8 sm:p-10 flex flex-col justify-center items-center text-center bg-slate-50">
-                    <p class="text-slate-400 font-bold tracking-widest text-sm mb-2 uppercase">Velgmaat</p>
-                    <p class="text-5xl font-black text-slate-900 mb-2">
-                        <?php echo $tire['width'].'/'.$tire['ratio'].' R'.$tire['rim']; ?>
-                    </p>
-                    <p class="text-slate-500 font-medium">Inch: <strong><?php echo $tire['rim']; ?>"</strong></p>
-                </div>
-                
-                <div class="p-8 sm:p-10">
-                    <ul class="space-y-4">
-                        <li class="flex justify-between items-center pb-4 border-b border-slate-100">
-                            <span class="text-slate-500 font-medium">Seizoen</span>
-                            <span class="font-bold text-lg text-slate-900 flex items-center gap-2">
-                                <?php echo htmlspecialchars($tire['season']); ?>
-                            </span>
-                        </li>
-                        <li class="flex justify-between items-center pb-4 border-b border-slate-100">
-                            <span class="text-slate-500 font-medium">Staat</span>
-                            <span class="font-bold text-lg text-slate-900">
-                                <?php if ($tire['is_new']): ?>
-                                    <span class="text-emerald-600">Nieuw</span>
-                                <?php else: ?>
-                                    <span class="text-slate-700">Profiel: <?php echo $tire['tread_depth']; ?> mm</span>
-                                <?php endif; ?>
-                            </span>
-                        </li>
-                        <li class="flex justify-between items-center pb-4 border-b border-slate-100">
-                            <span class="text-slate-500 font-medium">Load / Speed Index</span>
-                            <span class="font-bold text-lg text-slate-900"><?php echo htmlspecialchars($tire['load_index'] . ' ' . $tire['speed_index']); ?></span>
-                        </li>
-                        <li class="flex justify-between items-center">
-                            <span class="text-slate-500 font-medium">Referentie Code</span>
-                            <span class="font-mono font-bold text-sm text-slate-400"><?php echo htmlspecialchars($tire['qr_id']); ?></span>
-                        </li>
-                    </ul>
-                </div>
-                
+                <?php if ($set_count > 1): ?>
+                    <span class="inline-block bg-blue-100 text-blue-800 font-black px-6 py-2 rounded-full text-lg border-2 border-blue-200 mb-6 shadow-sm">
+                        Verkocht als Set van <?php echo $set_count; ?> Banden
+                    </span>
+                <?php endif; ?>
             </div>
-        </div>
-        
-        <div class="bg-blue-600 rounded-2xl shadow-lg p-8 text-center text-white relative overflow-hidden">
-            <div class="relative z-10">
-                <h3 class="text-2xl font-bold mb-2">Interesse in deze band<?php echo $set_count > 1 ? 'en' : ''; ?>?</h3>
-                <p class="text-blue-100 mb-6">Neem direct contact met ons op voor de actuele prijs en montagemogelijkheden. Bel ons of kom langs!</p>
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="tel:0641595931" class="bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-8 rounded-lg transition-colors shadow-sm text-lg flex items-center justify-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
-                        Bel direct
-                    </a>
+
+            <div class="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                    
+                    <div class="p-8 sm:p-10 flex flex-col justify-center items-center text-center bg-slate-50">
+                        <p class="text-slate-400 font-bold tracking-widest text-sm mb-2 uppercase">Velgmaat</p>
+                        <p class="text-5xl font-black text-slate-900 mb-2">
+                            <?php echo $tire['width'].'/'.$tire['ratio'].' R'.$tire['rim']; ?>
+                        </p>
+                        <p class="text-slate-500 font-medium">Inch: <strong><?php echo $tire['rim']; ?>"</strong></p>
+                    </div>
+                    
+                    <div class="p-8 sm:p-10">
+                        <ul class="space-y-4">
+                            <li class="flex justify-between items-center pb-4 border-b border-slate-100">
+                                <span class="text-slate-500 font-medium">Seizoen</span>
+                                <span class="font-bold text-lg text-slate-900 flex items-center gap-2">
+                                    <?php echo htmlspecialchars($tire['season']); ?>
+                                </span>
+                            </li>
+                            <li class="flex justify-between items-center pb-4 border-b border-slate-100">
+                                <span class="text-slate-500 font-medium">Staat</span>
+                                <span class="font-bold text-lg text-slate-900">
+                                    <?php if ($tire['is_new']): ?>
+                                        <span class="text-emerald-600">Nieuw</span>
+                                    <?php else: ?>
+                                        <span class="text-slate-700">Profiel: <?php echo $tire['tread_depth']; ?> mm</span>
+                                    <?php endif; ?>
+                                </span>
+                            </li>
+                            <li class="flex justify-between items-center pb-4 border-b border-slate-100">
+                                <span class="text-slate-500 font-medium">Load / Speed Index</span>
+                                <span class="font-bold text-lg text-slate-900"><?php echo htmlspecialchars($tire['load_index'] . ' ' . $tire['speed_index']); ?></span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="text-slate-500 font-medium">Referentie Code</span>
+                                <span class="font-mono font-bold text-sm text-slate-400"><?php echo htmlspecialchars($tire['qr_id']); ?></span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Call To Action -->
+            <div class="bg-blue-600 rounded-2xl shadow-lg p-8 text-center text-white relative overflow-hidden">
+                <div class="relative z-10">
+                    <h3 class="text-2xl font-bold mb-2">Interesse in deze band<?php echo $set_count > 1 ? 'en' : ''; ?>?</h3>
+                    <p class="text-blue-100 mb-6">Neem direct contact met ons op voor de actuele prijs en montagemogelijkheden. Bel ons of kom langs!</p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="tel:0641595931" class="bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-8 rounded-lg transition-colors shadow-sm text-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            Bel direct
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
     <?php else: ?>
         
-        <div class="space-y-4 py-4">
-            
-            <div class="bg-slate-900 rounded-3xl p-10 sm:p-16 text-center text-white shadow-2xl relative overflow-hidden pb-20">
-                <div class="relative z-10">
-                    <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight">Welkom bij Booij Banden</h1>
-                    <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-                        Al meer dan 25 jaar dé specialist in Culemborg. Met ruim 3.000 nieuwe en jong-gebruikte banden op voorraad vind je bij ons altijd de perfecte set.
-                    </p>
-                </div>
+        <!-- ========================================== -->
+        <!-- ALGEMENE LANDINGSPAGINA & ZOEKER         -->
+        <!-- ========================================== -->
+        
+        <!-- Full-Width Hero Sectie -->
+        <div class="w-full bg-slate-900 border-t border-slate-800 relative">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-32 text-center text-white">
+                <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight">Welkom bij Booij Banden</h1>
+                <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed">
+                    Al meer dan 25 jaar dé specialist in Culemborg. Met ruim 3.000 nieuwe en jong-gebruikte banden op voorraad vind je bij ons altijd de perfecte set.
+                </p>
             </div>
+        </div>
 
-            <div class="bg-white rounded-3xl p-8 sm:p-10 shadow-xl border border-slate-100 relative z-20 -mt-16 mx-4 sm:mx-8 mb-16">
+        <!-- Inhoud Container (Overlapt de Hero sectie) -->
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 pb-16">
+            
+            <!-- Voorraadzoeker Formulier -->
+            <div class="bg-white rounded-2xl p-8 sm:p-10 shadow-xl border border-slate-100 mb-12">
                 <h2 class="text-2xl font-black text-slate-800 mb-6 flex items-center gap-2">
                     <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     Zoek direct in onze voorraad
                 </h2>
-                <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-4 gap-5 items-end">
                     <input type="hidden" name="search_tires" value="1">
                     
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Breedte</label>
-                        <select name="w" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
+                        <select name="w" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
                             <option value="">Alle</option>
                             <?php foreach($widths as $w): ?>
                                 <option value="<?php echo $w; ?>" <?php if(isset($_GET['w']) && $_GET['w'] == $w) echo 'selected'; ?>><?php echo htmlspecialchars($w); ?></option>
@@ -171,7 +184,7 @@ include 'header.php';
                     
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Hoogte</label>
-                        <select name="r" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
+                        <select name="r" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
                             <option value="">Alle</option>
                             <?php foreach($ratios as $r): ?>
                                 <option value="<?php echo $r; ?>" <?php if(isset($_GET['r']) && $_GET['r'] == $r) echo 'selected'; ?>><?php echo htmlspecialchars($r); ?></option>
@@ -181,7 +194,7 @@ include 'header.php';
                     
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Inch (Velg)</label>
-                        <select name="i" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
+                        <select name="i" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3.5 font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none appearance-none">
                             <option value="">Alle</option>
                             <?php foreach($rims as $i): ?>
                                 <option value="<?php echo $i; ?>" <?php if(isset($_GET['i']) && $_GET['i'] == $i) echo 'selected'; ?>><?php echo htmlspecialchars($i); ?> Inch</option>
@@ -190,13 +203,14 @@ include 'header.php';
                     </div>
                     
                     <div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-6 rounded-xl shadow-md transition-colors uppercase tracking-wider h-[46px] flex items-center justify-center">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3.5 px-6 rounded-xl shadow transition-colors uppercase tracking-wider flex items-center justify-center">
                             Zoeken
                         </button>
                     </div>
                 </form>
             </div>
 
+            <!-- Zoekresultaten -->
             <?php if ($searchResults !== null): ?>
                 <div class="mb-16" id="resultaten">
                     <div class="flex justify-between items-center mb-6">
@@ -259,25 +273,27 @@ include 'header.php';
                 </div>
             <?php endif; ?>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 mt-8">
-                <div class="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+            <!-- USP's -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
                     <svg class="w-12 h-12 text-slate-800 mb-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                     <h3 class="text-xl font-black text-slate-800 mb-3">Gratis Montage & Balanceren</h3>
                     <p class="text-slate-500 leading-relaxed">Bij aanschaf van onze banden is de montage en het balanceren helemaal gratis. Zo ben je snel en veilig weer op weg.</p>
                 </div>
-                <div class="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
                     <svg class="w-12 h-12 text-slate-800 mb-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <h3 class="text-xl font-black text-slate-800 mb-3">Streng Gecontroleerd</h3>
                     <p class="text-slate-500 leading-relaxed">Al onze banden worden zorgvuldig nagemeten en getest op onze testmachine. Gegarandeerd géén bulten of scheuren.</p>
                 </div>
-                <div class="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
                     <svg class="w-12 h-12 text-slate-800 mb-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
                     <h3 class="text-xl font-black text-slate-800 mb-3">Topmerken (6 tot 8 mm)</h3>
                     <p class="text-slate-500 leading-relaxed">Van Michelin en Pirelli tot Continental. Wij leveren premium A-merken met uitstekend profiel tegen zeer scherpe prijzen.</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl p-10 sm:p-12 shadow-md border border-slate-100 mb-16">
+            <!-- Over Ons Sectie -->
+            <div class="bg-white rounded-3xl p-10 sm:p-12 shadow-sm border border-slate-100 mb-16">
                 <h2 class="text-2xl font-black text-slate-800 mb-6">Meer over ons</h2>
                 <div class="text-lg text-slate-600 leading-relaxed space-y-6">
                     <p class="text-xl text-slate-800 font-medium leading-snug">
@@ -306,7 +322,8 @@ include 'header.php';
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-100">
+            <!-- Bedrijfsgegevens & Openingstijden -->
+            <div class="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 mb-8">
                 <div class="grid grid-cols-1 md:grid-cols-2">
                     <div class="bg-slate-50 p-10 sm:p-12 border-b md:border-b-0 md:border-r border-slate-100">
                         <h2 class="text-2xl font-black text-slate-800 mb-8">Contact & Locatie</h2>
@@ -346,18 +363,17 @@ include 'header.php';
                 </div>
             </div>
             
-            <div class="text-center pt-4">
+            <div class="text-center">
                 <p class="text-slate-400 text-sm">Beheerder of medewerker? <a href="login.php" class="text-slate-500 hover:text-blue-600 hover:underline font-semibold transition-colors">Log hier in</a>.</p>
             </div>
-            
-        </div>
+
+        </div> <!-- Einde overlappende container -->
         
     <?php endif; ?>
 
 </main>
 
 <?php 
-// Scrol automatisch naar resultaten na het zoeken
 if (isset($_GET['search_tires'])) {
     echo "<script>
         document.addEventListener('DOMContentLoaded', function() {
