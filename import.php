@@ -1,6 +1,13 @@
 <?php
-// import.php - Eenmalig script om CSV in te lezen
+// import.php - Volledige code met debug-modus
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require_once 'db.php';
+
+// Forceer PDO om fouten te tonen, overschrijft db.php instellingen
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $csvFile = 'marktplaats_import.csv';
 
@@ -8,25 +15,21 @@ if (!file_exists($csvFile)) {
     die("Fout: Bestand '$csvFile' niet gevonden.");
 }
 
-// Open de CSV (leesrechten)
 $file = fopen($csvFile, 'r');
-
-// Sla de eerste regel (headers) over
 $header = fgetcsv($file, 1000, ';'); 
-
 $succesCount = 0;
 
-// Bereid de SQL query voor. 
-// LET OP: Controleer of de tabelnaam 'voorraad' is en pas indien nodig je kolomnamen aan.
 $query = "INSERT INTO voorraad (breedte, hoogte, inch, merk, model, seizoen, profiel, prijs) 
           VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-$stmt = $pdo->prepare($query);
 
-// Lees de rest van de regels één voor één uit
+try {
+    // Hier ging het script waarschijnlijk stuk op een verkeerde tabel- of kolomnaam
+    $stmt = $pdo->prepare($query);
+} catch (\PDOException $e) {
+    die("<h1>Database Fout:</h1><p>" . $e->getMessage() . "</p><p>Controleer in je database of de tabelnaam en kolommen exact overeenkomen met de query.</p>");
+}
+
 while (($data = fgetcsv($file, 1000, ';')) !== false) {
-    // $data array komt overeen met de kolommen in de CSV:
-    // 0: Breedte, 1: Hoogte, 2: Inch, 3: Merk, 4: Model, 5: Seizoen, 6: Profiel, 7: Prijs
-    
     try {
         $stmt->execute([
             $data[0], // breedte
@@ -40,7 +43,7 @@ while (($data = fgetcsv($file, 1000, ';')) !== false) {
         ]);
         $succesCount++;
     } catch (\PDOException $e) {
-        echo "Fout bij rij (Merk: {$data[3]}): " . $e->getMessage() . "<br>";
+        echo "Fout bij toevoegen van band (Merk: {$data[3]}): " . $e->getMessage() . "<br>";
     }
 }
 
