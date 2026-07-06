@@ -4,7 +4,6 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 require_once 'db.php';
-
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $csvFile = 'marktplaats_import.csv';
@@ -20,11 +19,7 @@ $succesCount = 0;
 $query = "INSERT INTO tires (qr_id, width, ratio, rim, brand, model, season, tread_depth, price, is_new, status) 
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'voorraad')";
 
-try {
-    $stmt = $pdo->prepare($query);
-} catch (\PDOException $e) {
-    die("<h1>Database Fout:</h1><p>" . $e->getMessage() . "</p>");
-}
+$stmt = $pdo->prepare($query);
 
 while (($data = fgetcsv($file, 1000, ';')) !== false) {
     $qr_id = substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, 10);
@@ -61,5 +56,5 @@ while (($data = fgetcsv($file, 1000, ';')) !== false) {
 
 fclose($file);
 echo "<h2>Import voltooid!</h2>";
-echo "<p>Er zijn in totaal <strong>$succesCount</strong> banden succesvol toegevoegd aan de voorraad.</p>";
+echo "<p>Er zijn in totaal <strong>$succesCount</strong> nieuwe banden succesvol toegevoegd aan de voorraad.</p>";
 ?>

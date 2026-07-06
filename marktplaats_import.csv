@@ -1,28 +1,96 @@
 Breedte;Hoogte;Inch;Merk;Model;Seizoen;Profiel;Prijs
-255;45;19;Pirelli;Scorpion;Zomer;7.8;135.00
-295;40;21;Pirelli;P Zero;Zomer;7.8;165.00
-245;35;20;Continental;SportContact 6;Zomer;7.7;135.00
-285;30;22;Pirelli;P Zero;Zomer;7.7;175.00
-305;30;21;Goodyear;Eagle F1;Zomer;7.7;165.00
-235;40;19;Michelin;Primacy 4;Zomer;7.4;135.00
-255;50;19;Continental;SportContact 5;Zomer;8.0;145.00
-245;35;21;Pirelli;P Zero;Zomer;7.8;165.00
-315;35;22;Pirelli;P Zero;Zomer;7.6;175.00
-255;45;19;Pirelli;P7 Cinturato;Zomer;7.5;135.00
-295;40;21;Continental;SportContact 5;Zomer;7.8;165.00
-285;40;21;Bridgestone;Alenza;Zomer;7.4;165.00
-245;40;19;Michelin;Primacy 3 RFT;Zomer;7.5;135.00
-315;30;22;Pirelli;P Zero;Zomer;7.7;175.00
-215;55;17;Continental;PremiumContact;Zomer;7.7;75.00
-235;45;20;Bridgestone;Alenza;Zomer;7.4;135.00
-225;55;18;Michelin;Primacy 4;Zomer;7.4;95.00
-205;60;16;Michelin;CrossClimate;All Season;7.5;70.00
-205;45;17;Goodyear;Eagle F1;Zomer;7.8;75.00
-265;45;20;Michelin;Latitude;Zomer;7.5;135.00
-225;55;17;Michelin;Primacy 4;Zomer;7.4;85.00
-285;40;22;Pirelli;Scorpion Zero;Zomer;7.5;175.00
-235;55;18;Hankook;S1 Evo2 SUV;Zomer;8.0;100.00
-255;40;22;Continental;PremiumContact 6;Zomer;8.0;195.00
-225;55;17;Continental;VancoContact C;Zomer;8.0;95.00
-235;35;20;Michelin;Pilot Sport 4;Zomer;7.2;135.00
-215;45;17;Bridgestone;Turanza 6;Zomer;7.4;75.00
+255;40;20;Pirelli;P Zero;Zomer;7.6;135.00
+215;45;17;Goodyear;Vector;All Season;7.5;80.00
+255;60;20;Michelin;Primacy;Zomer;7.5;135.00
+275;45;21;Pirelli;Scorpion Verde;All Season;7.7;165.00
+215;50;17;Bridgestone;Turanza 6;Zomer;7.4;75.00
+255;50;19;Pirelli;P7;Zomer;7.5;115.00
+255;40;19;Pirelli;P Zero;Zomer;7.8;125.00
+215;65;17;Continental;EcoContact 6;Zomer;7.1;75.00
+225;50;17;Bridgestone;Turanza T005;Zomer;7.4;85.00
+205;55;17;Michelin;Primacy 4;Zomer;7.3;75.00
+235;45;20;Pirelli;P7 Cinturato;Zomer;7.9;135.00
+245;35;18;Bridgestone;Potenza S001 RFT;Zomer;7.8;95.00
+265;40;21;Michelin;Latitude Sport;Zomer;7.7;165.00
+295;35;21;Michelin;Latitude Sport 3;Zomer;7.7;165.00
+295;40;20;Pirelli;P Zero;Zomer;7.5;135.00
+285;45;22;Pirelli;Scorpion Zero;All Season;7.5;175.00
+235;45;17;Michelin;Primacy 4;Zomer;7.2;85.00
+285;35;21;Goodyear;Asymmetric 6;Zomer;7.6;165.00
+275;35;21;Bridgestone;Alenza RFT;Zomer;7.3;165.00
+245;40;19;Pirelli;P7 Cinturato RFT;Zomer;7.8;135.00
+285;35;22;Bridgestone;Alenza;Zomer;7.7;195.00
+255;40;21;Pirelli;P Zero;Zomer;7.4;165.00
+205;40;17;Continental;SportContact 5;Zomer;7.8;75.00
+205;55;17;Continental;PremiumContact 5;Zomer;7.8;75.00
+225;40;19;Bridgestone;Turanza T005;Zomer;7.4;125.00
+295;30;20;Pirelli;P Zero;Zomer;7.6;145.00
+285;45;20;Bridgestone;Alenza;Zomer;7.7;150.00
+245;45;20;Hankook;Kinergy All Season;All Season;7.5;135.00
+255;35;20;Goodyear;Eagle F1;Zomer;7.5;135.00
+205;40;18;Continental;PremiumContact 6;Zomer;7.6;95.00
+215;60;17;Bridgestone;Turanza T005;Zomer;7.4;75.00
+245;35;20;Dunlop;SportMaxx GT RFT;Zomer;7.2;135.00
+245;50;20;Goodyear;Eagle Sport;All Season;7.7;135.00
+275;30;21;Pirelli;P Zero;Zomer;7.7;175.00
+225;40;20;Pirelli;P Zero RFT;Zomer;7.7;145.00
+205;65;16;Goodyear;EfficientGrip Cargo;Zomer;8.5;85.00
+225;60;18;Continental;EcoContact 6;Zomer;7.0;95.00
+245;45;19;Michelin;Primacy 4;Zomer;7.2;135.00
+295;30;20;Michelin;Pilot Sport 4S;Zomer;7.2;145.00
+265;35;20;Pirelli;P Zero;Zomer;7.6;145.00
+295;35;20;Goodyear;Eagle F1;Zomer;8.0;165.00
+285;30;21;Pirelli;P Zero;Zomer;7.8;165.00
+225;45;18;Michelin;Primacy 4;Zomer;7.2;95.00
+305;30;21;Pirelli;P Zero;Zomer;7.8;175.00
+205;40;18;Pirelli;P Zero RFT;Zomer;7.8;95.00
+255;35;21;Pirelli;P Zero;Zomer;7.5;165.00
+255;55;19;Bridgestone;Turanza T005;Zomer;7.7;110.00
+275;40;22;Pirelli;P Zero;Zomer;7.8;175.00
+245;50;18;Pirelli;P7 Cinturato RFT;Zomer;7.8;95.00
+295;30;21;Pirelli;P Zero;Zomer;7.8;165.00
+215;50;18;Continental;EcoContact 6;Zomer;7.2;75.00
+215;65;17;Michelin;Primacy 4;Zomer;7.0;75.00
+275;35;22;Pirelli;P7 Cinturato;Zomer;7.7;175.00
+255;50;20;Pirelli;P Zero;Zomer;7.6;135.00
+255;35;20;Pirelli;P Zero;Zomer;7.8;135.00
+265;35;21;Goodyear;Eagle F1;Zomer;7.5;165.00
+315;40;21;Michelin;Pilot Sport 4 SUV;Zomer;7.7;175.00
+265;40;21;Goodyear;Eagle F1;Zomer;7.7;165.00
+285;40;22;Continental;SportContact 6;Zomer;7.8;175.00
+255;40;21;Pirelli;Scorpion;Zomer;7.5;165.00
+255;45;19;Pirelli;Scorpion;Zomer;7.5;135.00
+225;55;18;Bridgestone;Turanza 6;Zomer;7.6;95.00
+255;35;21;Vredestein;Quatrac Pro;All Season;7.6;165.00
+255;35;19;Bridgestone;Turanza T005 RFT;Zomer;7.0;135.00
+245;40;19;Michelin;Pilot Sport 4;Zomer;7.2;135.00
+235;50;19;Continental;AllSeasonContact;All Season;7.6;135.00
+245;35;18;Bridgestone;Potenza S001 RFT;Zomer;7.9;95.00
+235;50;20;Pirelli;Scorpion Verde;Zomer;7.8;135.00
+245;40;20;Continental;EcoContact 6;Zomer;7.2;135.00
+285;40;20;Michelin;Pilot Sport 4;Zomer;7.4;145.00
+275;35;20;Pirelli;P Zero;Zomer;7.2;135.00
+215;65;16;Michelin;Agilis;Zomer;9.0;85.00
+215;55;17;Michelin;Primacy 4;Zomer;7.2;75.00
+215;60;17;Continental;EcoContact 6;Zomer;7.0;75.00
+275;40;21;Hankook;Ventus S1 evo3 RFT;Zomer;7.6;165.00
+245;45;19;Michelin;Primacy 4;Zomer;7.0;135.00
+315;35;21;Hankook;Ventus S1 evo3 RFT;Zomer;7.7;165.00
+285;40;21;Pirelli;P Zero;Zomer;7.5;165.00
+235;50;20;Hankook;iON evo;Zomer;8.0;135.00
+235;65;16;Continental;Vanco;Zomer;8.7;85.00
+245;40;19;Bridgestone;Turanza T005;Zomer;7.4;135.00
+235;35;19;Bridgestone;Turanza S005;Zomer;7.4;115.00
+225;45;17;Bridgestone;Turanza 6;Zomer;7.4;75.00
+275;40;20;Bridgestone;Turanza 6;Zomer;7.2;135.00
+275;35;22;Continental;PremiumContact 6;Zomer;7.5;175.00
+275;35;20;Pirelli;P Zero;Zomer;7.6;145.00
+195;50;13;Maxxis;Trailer;Zomer;8.0;55.00
+215;60;17;Bridgestone;Turanza T005;Zomer;7.4;75.00
+215;55;17;Hankook;Ventus Prime 4;Zomer;7.8;75.00
+225;50;17;Bridgestone;Turanza T005;Zomer;7.4;85.00
+205;55;17;Michelin;Primacy 4;Zomer;7.4;75.00
+255;40;21;Michelin;CrossClimate;All Season;7.7;165.00
+285;35;20;Bridgestone;Turanza 6;Zomer;7.5;145.00
+275;45;21;Pirelli;Scorpion Zero;Zomer;7.5;165.00
+305;40;20;Bridgestone;Alenza RFT;Zomer;7.7;145.00
