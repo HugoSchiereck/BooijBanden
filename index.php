@@ -28,11 +28,10 @@ $pageTitle = $tire ? "Specificaties: " . $tire['brand'] . " " . $tire['model'] :
 include 'header.php';
 ?>
 
-<main class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+<main class="max-w-5xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
 
     <?php if ($tire): ?>
         
-        <!-- Band Detailweergave voor Klanten -->
         <div class="mb-8 text-center">
             <h1 class="text-4xl sm:text-5xl font-black text-slate-800 mb-2 uppercase tracking-tight">
                 <?php echo htmlspecialchars($tire['brand']); ?>
@@ -95,49 +94,98 @@ include 'header.php';
             </div>
         </div>
         
-        <!-- Call To Action -->
         <div class="bg-blue-600 rounded-2xl shadow-lg p-8 text-center text-white relative overflow-hidden">
             <div class="relative z-10">
                 <h3 class="text-2xl font-bold mb-2">Interesse in deze band<?php echo $set_count > 1 ? 'en' : ''; ?>?</h3>
                 <p class="text-blue-100 mb-6">Neem direct contact met ons op voor de actuele prijs en montagemogelijkheden. Bel ons of kom langs!</p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="tel:0123456789" class="bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-8 rounded-lg transition-colors shadow-sm text-lg">
+                    <a href="tel:0641595931" class="bg-white text-blue-700 hover:bg-blue-50 font-black py-3 px-8 rounded-lg transition-colors shadow-sm text-lg">
                         📞 Bel direct
                     </a>
                 </div>
             </div>
-            <!-- Subtiele achtergrond decoratie -->
-            <svg class="absolute opacity-10 w-64 h-64 -right-10 -bottom-20 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8s8,3.59,8,8 S16.41,20,12,20z M12.5,7H11v6l5.25,3.15l0.75-1.23l-4.5-2.67V7z"/></svg>
         </div>
 
     <?php else: ?>
         
-        <!-- Algemene Landingspagina (Zonder Scan) -->
-        <div class="text-center py-16">
-            <h1 class="text-5xl font-black text-slate-800 mb-6 tracking-tight">Welkom bij Booij Banden</h1>
-            <p class="text-xl text-slate-600 max-w-2xl mx-auto mb-10">Dé specialist in verkoop en montage van kwaliteitsbanden. We hebben een ruime voorraad nieuwe en nauwelijks gebruikte topmerken.</p>
+        <div class="space-y-12 sm:space-y-16 py-4">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <div class="text-4xl mb-4">🔧</div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-2">Vakkundige Montage</h3>
-                    <p class="text-slate-500">Wij monteren en balanceren je nieuwe banden terwijl je wacht. Snel en veilig de weg weer op.</p>
+            <div class="bg-slate-900 rounded-3xl p-10 sm:p-16 text-center text-white shadow-2xl relative overflow-hidden">
+                <div class="relative z-10">
+                    <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight">Welkom bij Booij Banden</h1>
+                    <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+                        Al meer dan 25 jaar dé specialist in Culemborg. Met ruim 3.000 nieuwe en jong-gebruikte banden op voorraad vind je bij ons altijd de perfecte set.
+                    </p>
+                    <a href="tel:0641595931" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-10 rounded-full transition-colors text-lg shadow-lg">
+                        📞 06 41 59 59 31
+                    </a>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <div class="text-4xl mb-4">🏆</div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-2">Top Merken</h3>
-                    <p class="text-slate-500">Van Michelin tot Vredestein. We leveren A-merken tegen zeer scherpe prijzen.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+                    <div class="text-5xl mb-6">🔧</div>
+                    <h3 class="text-xl font-black text-slate-800 mb-3">Gratis Montage & Balanceren</h3>
+                    <p class="text-slate-500 leading-relaxed">Bij aanschaf van onze banden is de montage en het balanceren helemaal gratis. Zo ben je snel en veilig weer op weg.</p>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <div class="text-4xl mb-4">🔎</div>
-                    <h3 class="text-lg font-bold text-slate-800 mb-2">Zorgvuldig Gecontroleerd</h3>
-                    <p class="text-slate-500">Al onze banden worden streng gecontroleerd en nagemeten op profieldiepte en kwaliteit.</p>
+                <div class="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+                    <div class="text-5xl mb-6">🔎</div>
+                    <h3 class="text-xl font-black text-slate-800 mb-3">Streng Gecontroleerd</h3>
+                    <p class="text-slate-500 leading-relaxed">Al onze banden worden zorgvuldig nagemeten en getest op onze testmachine. Gegarandeerd géén bulten of scheuren.</p>
+                </div>
+                <div class="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+                    <div class="text-5xl mb-6">🏆</div>
+                    <h3 class="text-xl font-black text-slate-800 mb-3">Topmerken (6 tot 8 mm)</h3>
+                    <p class="text-slate-500 leading-relaxed">Van Michelin en Pirelli tot Continental. Wij leveren premium A-merken met uitstekend profiel tegen zeer scherpe prijzen.</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-100">
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    
+                    <div class="bg-slate-50 p-10 sm:p-12">
+                        <h2 class="text-2xl font-black text-slate-800 mb-8">Contact & Locatie</h2>
+                        <ul class="space-y-6 text-slate-600 text-lg">
+                            <li class="flex items-start">
+                                <span class="text-2xl mr-4">📍</span>
+                                <span>
+                                    <strong class="text-slate-800 block mb-1">Booij Banden B.V.</strong>
+                                    Plantijnweg 30<br>
+                                    4104 BB Culemborg
+                                </span>
+                            </li>
+                            <li class="flex items-center pt-2">
+                                <span class="text-2xl mr-4">📞</span>
+                                <a href="tel:0641595931" class="font-bold text-blue-600 hover:text-blue-800 transition-colors">06 41 59 59 31</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="p-10 sm:p-12">
+                        <h2 class="text-2xl font-black text-slate-800 mb-8">Openingstijden</h2>
+                        <ul class="space-y-4 text-slate-600">
+                            <li class="flex justify-between items-center border-b border-slate-100 pb-4">
+                                <span>Maandag - Vrijdag</span> 
+                                <span class="font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-md">09:00 - 17:30</span>
+                            </li>
+                            <li class="flex justify-between items-center border-b border-slate-100 pb-4">
+                                <span>Zaterdag</span> 
+                                <span class="font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-md">09:00 - 16:00</span>
+                            </li>
+                            <li class="flex justify-between items-center pt-2">
+                                <span>Zondag</span> 
+                                <span class="font-bold text-red-400 bg-red-50 px-3 py-1 rounded-md">Gesloten</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
                 </div>
             </div>
             
-            <div class="mt-12 pt-8 border-t border-slate-200">
-                <p class="text-slate-500">Bent u medewerker? <a href="login.php" class="text-blue-600 font-bold hover:underline">Log hier in</a>.</p>
+            <div class="text-center pt-4">
+                <p class="text-slate-400 text-sm">Beheerder of medewerker? <a href="login.php" class="text-slate-500 hover:text-blue-600 hover:underline font-semibold transition-colors">Log hier in</a>.</p>
             </div>
+            
         </div>
         
     <?php endif; ?>
