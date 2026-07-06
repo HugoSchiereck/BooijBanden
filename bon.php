@@ -22,10 +22,28 @@ if (!$order) {
     die("Order niet gevonden of nog niet afgerekend.");
 }
 
-// Haal banden op
+// Haal alle banden op voor deze order
 $stmtTires = $pdo->prepare("SELECT * FROM tires WHERE order_id = ?");
 $stmtTires->execute([$order_id]);
-$tires = $stmtTires->fetchAll();
+$raw_tires = $stmtTires->fetchAll();
+
+// --- NIEUW: Groeperen van identieke banden ---
+$grouped_tires = [];
+foreach ($raw_tires as $t) {
+    // Maak een unieke sleutel op basis van maat, merk en prijs per stuk
+    $tire_key = $t['width'] . '/' . $t['ratio'] . 'R' . $t['rim'] . '_' . $t['brand'] . '_' . $t['price'];
+    
+    if (!isset($grouped_tires[$tire_key])) {
+        $grouped_tires[$tire_key] = [
+            'qty'   => 1,
+            'desc'  => $t['width'] . '/' . $t['ratio'] . 'R' . $t['rim'],
+            'brand' => $t['brand'],
+            'price' => (float)$t['price']
+        ];
+    } else {
+        $grouped_tires[$tire_key]['qty']++;
+    }
+}
 
 // Haal diensten op
 $stmtServices = $pdo->prepare("SELECT os.*, s.name FROM order_services os JOIN services s ON os.service_id = s.id WHERE os.order_id = ?");
@@ -175,14 +193,16 @@ function formatteerKenteken($lp) {
             <div class="divider"></div>
             
             <table>
-                <?php foreach($tires as $t): ?>
+                <?php foreach($grouped_tires as $gt): 
+                    $subtotal = $gt['price'] * $gt['qty'];
+                ?>
                 <tr>
-                    <td class="qty-col">1x</td>
+                    <td class="qty-col"><?php echo $gt['qty']; ?>x</td>
                     <td class="desc-col">
-                        <?php echo $t['width'].'/'.$t['ratio'].'R'.$t['rim']; ?><br>
-                        <span style="font-size: 10px;"><?php echo htmlspecialchars($t['brand']); ?></span>
+                        <?php echo $gt['desc']; ?><br>
+                        <span style="font-size: 10px;"><?php echo htmlspecialchars($gt['brand']); ?></span>
                     </td>
-                    <td class="price-col">&euro;<?php echo number_format($t['price'], 2, ',', ''); ?></td>
+                    <td class="price-col">&euro;<?php echo number_format($subtotal, 2, ',', ''); ?></td>
                 </tr>
                 <?php endforeach; ?>
                 
@@ -222,7 +242,6 @@ function formatteerKenteken($lp) {
         </div>
     </div>
 
-    <!-- Automatisch de print dialoog openen bij het laden -->
     <script>
         window.onload = function() {
             setTimeout(function() {
