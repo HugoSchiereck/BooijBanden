@@ -12,10 +12,12 @@ if (!isset($_SESSION['user_id'])) {
 $msg = "";
 $error = "";
 
-// --- 0. Band scannen en nieuwe order aanmaken ---
+// --- 0. Band scannen en nieuwe order aanmaken met Klantnaam & Kenteken ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_scan_order'])) {
     $qr_id = trim($_POST['scan_qr']);
     $customer_name = trim($_POST['customer_name']);
+    $license_plate = strtoupper(getinschoondKenteken(trim($_POST['license_plate']))); // Schoonmaken en in hoofdletters
+    
     if (empty($customer_name)) {
         $customer_name = "Inloopklant";
     }
@@ -42,9 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_scan_order']))
                     }
                 }
                 
-                // Maak een nieuwe open order aan
-                $stmtNewOrder = $pdo->prepare("INSERT INTO orders (customer_name, status, created_at) VALUES (?, 'open', NOW())");
-                $stmtNewOrder->execute([$customer_name]);
+                // Maak een nieuwe open order aan inclusief kenteken
+                $stmtNewOrder = $pdo->prepare("INSERT INTO orders (customer_name, license_plate, status, created_at) VALUES (?, ?, 'open', NOW())");
+                $stmtNewOrder->execute([$customer_name, $license_plate]);
                 $new_order_id = $pdo->lastInsertId();
                 
                 // Als de band onderdeel is van een set, voeg de hele beschikbare set toe
@@ -89,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_mounted'])) {
         $pdo->beginTransaction();
         $pdo->prepare("UPDATE tires SET status = 'gemonteerd' WHERE order_id = ?")->execute([$order_id]);
         
-        // Log deze actie
         $stmtQrs = $pdo->prepare("SELECT qr_id FROM tires WHERE order_id = ?");
         $stmtQrs->execute([$order_id]);
         $qrs = $stmtQrs->fetchAll(PDO::FETCH_COLUMN);
@@ -155,6 +156,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['checkout'])) {
     }
 }
 
+// Helper functie om streepjes uit kenteken te halen / uniform te maken
+function getinschoondKenteken($lp) {
+    return str_replace(['-', ' ', '.'], '', $lp);
+}
+
+// Formatteer kenteken voor weergave (bijv. XX-XX-XX)
+function formatteerKenteken($lp) {
+    if (strlen($lp) === 6) {
+        return substr($lp, 0, 2) . '-' . substr($lp, 2, 2) . '-' . substr($lp, 4, 2);
+    }
+    return $lp;
+}
+
 // Haal actieve orders op
 try {
     $stmtOrders = $pdo->query("SELECT * FROM orders WHERE status = 'open' ORDER BY created_at ASC");
@@ -196,7 +210,7 @@ include 'header.php';
     <?php if ($error): ?><div class="bg-red-50 border-l-4 border-red-500 p-3 mb-4 rounded shadow-sm text-red-800 text-sm font-bold"><?php echo $error; ?></div><?php endif; ?>
 
     <div class="bg-white rounded-xl shadow-md border border-slate-200 p-5 mb-8">
-        <form method="POST" class="flex flex-col md:flex-row gap-4 items-end">
+        <form method="POST" class="flex flex-col lg:flex-row gap-4 items-end">
             <div class="flex-grow w-full">
                 <label for="scan_qr" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Snelkoppeling handscanner (Scan QR / Referentie)</label>
                 <div class="relative rounded-lg shadow-sm">
@@ -212,7 +226,11 @@ include 'header.php';
                 <label for="customer_name" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Klantnaam (Optioneel)</label>
                 <input type="text" name="customer_name" id="customer_name" placeholder="Inloopklant" class="block w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm text-slate-800">
             </div>
-            <button type="submit" name="create_scan_order" class="w-full md:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-2.5 px-6 rounded-lg shadow transition-colors text-sm uppercase tracking-wider whitespace-nowrap">
+            <div class="w-full md:w-48">
+                <label for="license_plate" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Kenteken (Optioneel)</label>
+                <input type="text" name="license_plate" id="license_plate" placeholder="AB-123-C" class="block w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold uppercase tracking-wider text-slate-800">
+            </div>
+            <button type="submit" name="create_scan_order" class="w-full lg:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-2.5 px-6 rounded-lg shadow transition-colors text-sm uppercase tracking-wider whitespace-nowrap">
                 Toevoegen
             </button>
         </form>
@@ -246,12 +264,22 @@ include 'header.php';
         ?>
             
         <div class="bg-white rounded-xl shadow-md border border-slate-200 flex flex-col relative overflow-hidden">
-            <div class="px-5 py-3 border-b border-slate-100 <?php echo $all_mounted ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'; ?>">
-                <div class="flex justify-between items-center">
-                    <h3 class="font-black text-lg">Order #<?php echo str_pad($order['id'], 4, "0", STR_PAD_LEFT); ?></h3>
-                    <span class="text-xs font-bold opacity-80"><?php echo date('H:i', strtotime($order['created_at'])); ?></span>
+            <div class="px-5 py-4 border-b border-slate-100 <?php echo $all_mounted ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-800'; ?>">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-black text-lg">Order #<?php echo str_pad($order['id'], 4, "0", STR_PAD_LEFT); ?></h3>
+                        <p class="text-sm font-bold opacity-90 mt-0.5">Klant: <?php echo htmlspecialchars($order['customer_name']); ?></p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="text-xs font-bold opacity-70"><?php echo date('H:i', strtotime($order['created_at'])); ?></span>
+                        
+                        <?php if (!empty($order['license_plate'])): ?>
+                            <span class="inline-block bg-yellow-400 text-slate-900 font-black px-2 py-0.5 rounded border border-slate-900 text-xs shadow-sm uppercase font-mono tracking-wide">
+                                <?php echo htmlspecialchars(formatteerKenteken($order['license_plate'])); ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
                 </div>
-                <p class="text-sm font-medium opacity-90 mt-0.5">Klant: <?php echo htmlspecialchars($order['customer_name']); ?></p>
             </div>
             
             <div class="p-5 flex-grow">
@@ -355,6 +383,7 @@ include 'header.php';
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Tijdstip</th>
                             <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Order / Klant</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Kenteken</th>
                             <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Betaalwijze</th>
                             <th class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase">Bedrag</th>
                             <th class="px-4 py-3 text-right text-xs font-bold text-slate-500 uppercase">Actie</th>
@@ -367,6 +396,15 @@ include 'header.php';
                             <td class="px-4 py-3">
                                 <div class="font-bold text-slate-800 text-sm">#<?php echo str_pad($comp['id'], 4, "0", STR_PAD_LEFT); ?></div>
                                 <div class="text-xs text-slate-500"><?php echo htmlspecialchars($comp['customer_name']); ?></div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <?php if (!empty($comp['license_plate'])): ?>
+                                    <span class="inline-block bg-yellow-400 text-slate-900 font-black px-2 py-0.5 rounded border border-slate-900 text-xs uppercase font-mono tracking-wide">
+                                        <?php echo htmlspecialchars(formatteerKenteken($comp['license_plate'])); ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="text-slate-400 text-xs italic">N.v.t.</span>
+                                <?php endif; ?>
                             </td>
                             <td class="px-4 py-3">
                                 <span class="px-2 py-1 bg-green-100 text-green-800 rounded font-bold text-xs uppercase">
