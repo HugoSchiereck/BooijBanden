@@ -32,6 +32,7 @@ include 'header.php';
 
     <?php if ($tire): ?>
         
+        <!-- Band Detailweergave voor Klanten (via QR) -->
         <div class="mb-8 text-center">
             <h1 class="text-4xl sm:text-5xl font-black text-slate-800 mb-2 uppercase tracking-tight">
                 <?php echo htmlspecialchars($tire['brand']); ?>
@@ -94,6 +95,7 @@ include 'header.php';
             </div>
         </div>
         
+        <!-- Call To Action -->
         <div class="bg-blue-600 rounded-2xl shadow-lg p-8 text-center text-white relative overflow-hidden">
             <div class="relative z-10">
                 <h3 class="text-2xl font-bold mb-2">Interesse in deze band<?php echo $set_count > 1 ? 'en' : ''; ?>?</h3>
@@ -108,8 +110,10 @@ include 'header.php';
 
     <?php else: ?>
         
+        <!-- Algemene Landingspagina (Zonder Scan) -->
         <div class="space-y-12 sm:space-y-16 py-4">
             
+            <!-- Hero Sectie -->
             <div class="bg-slate-900 rounded-3xl p-10 sm:p-16 text-center text-white shadow-2xl relative overflow-hidden">
                 <div class="relative z-10">
                     <h1 class="text-4xl sm:text-6xl font-black mb-6 tracking-tight">Welkom bij Booij Banden</h1>
@@ -122,6 +126,7 @@ include 'header.php';
                 </div>
             </div>
 
+            <!-- USP's (Unique Selling Points) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="bg-white p-8 rounded-2xl shadow-md border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
                     <div class="text-5xl mb-6">🔧</div>
@@ -140,9 +145,22 @@ include 'header.php';
                 </div>
             </div>
 
+            <!-- Over Ons Sectie -->
+            <div class="bg-blue-50 rounded-3xl p-10 sm:p-12 border border-blue-100 shadow-sm">
+                <h2 class="text-3xl font-black text-slate-800 mb-6">Meer over ons</h2>
+                <div class="text-lg text-slate-700 leading-relaxed space-y-4">
+                    <p>Bij Booij Banden B.V. staan we al jarenlang bekend om onze vakkennis, klantvriendelijkheid en betrouwbare service. Of het nu gaat om nieuwe banden of voordelige demo banden — wij helpen u veilig op weg.</p>
+                    <p>Wij zijn een familiebedrijf met passie voor banden en techniek. Vanuit onze werkplaats in Culemborg bedienen we zowel particuliere als zakelijke klanten met deskundige bandenservice.</p>
+                    <p>Onze diensten bestaan uit het monteren van banden, balanceren van wielen en het repareren van lekke of beschadigde banden.</p>
+                    <p>Wat ons onderscheidt? Persoonlijk contact, eerlijke adviezen en een snelle, vakkundige aanpak. We denken met u mee en zorgen ervoor dat uw auto weer veilig de weg op kan — tegen een eerlijke prijs.</p>
+                </div>
+            </div>
+
+            <!-- Bedrijfsgegevens & Openingstijden -->
             <div class="bg-white rounded-3xl overflow-hidden shadow-md border border-slate-100">
                 <div class="grid grid-cols-1 md:grid-cols-2">
                     
+                    <!-- Contact -->
                     <div class="bg-slate-50 p-10 sm:p-12">
                         <h2 class="text-2xl font-black text-slate-800 mb-8">Contact & Locatie</h2>
                         <ul class="space-y-6 text-slate-600 text-lg">
@@ -161,6 +179,7 @@ include 'header.php';
                         </ul>
                     </div>
 
+                    <!-- Openingstijden -->
                     <div class="p-10 sm:p-12">
                         <h2 class="text-2xl font-black text-slate-800 mb-8">Openingstijden</h2>
                         <ul class="space-y-4 text-slate-600">
@@ -182,6 +201,7 @@ include 'header.php';
                 </div>
             </div>
             
+            <!-- Subtiele footer login -->
             <div class="text-center pt-4">
                 <p class="text-slate-400 text-sm">Beheerder of medewerker? <a href="login.php" class="text-slate-500 hover:text-blue-600 hover:underline font-semibold transition-colors">Log hier in</a>.</p>
             </div>
