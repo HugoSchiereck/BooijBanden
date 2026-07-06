@@ -123,7 +123,7 @@ include 'header.php';
                 </div>
             </div>
             
-            <div class="w-full overflow-x-auto hide-scrollbar pb-2 relative z-10">
+            <div class="w-full overflow-x-auto hide-scrollbar pb-2 relative z-10 min-w-0">
                 <div class="grid grid-cols-6 lg:grid-cols-12 gap-2 sm:gap-3 min-w-[550px] lg:min-w-0">
                     <?php 
                     $racks = range(1, 12);

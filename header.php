@@ -5,21 +5,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $is_logged_in = isset($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
-<html lang="nl" class="w-full overflow-x-hidden">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($pageTitle) ? $pageTitle . ' - Booij Banden' : 'Booij Banden'; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Verberg scrollbars op mobiele swipe-elementen (zoals tabbladen) */
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col text-sm sm:text-base w-full overflow-x-hidden relative">
+<body class="bg-slate-50 min-h-screen flex flex-col text-sm sm:text-base">
 
-<nav class="w-full bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
+<nav class="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-14 sm:h-16">
             
