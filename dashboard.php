@@ -64,9 +64,9 @@ $pageTitle = "Dashboard";
 include 'header.php';
 ?>
 
-<main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
+<main class="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
     
-    <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full min-w-0">
         <div class="w-full md:w-auto">
             <h1 class="text-3xl font-bold text-slate-800">Welkom, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
             <p class="text-slate-500 mt-1">Hier is een overzicht van de huidige voorraad in het magazijn.</p>
@@ -84,9 +84,9 @@ include 'header.php';
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full min-w-0">
         
-        <a href="voorraad.php" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-400 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between">
+        <a href="voorraad.php" class="min-w-0 bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-400 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex justify-between items-start">
                 <div class="text-sm font-semibold text-slate-500 uppercase tracking-wide group-hover:text-blue-600 transition-colors">Totale Voorraad</div>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300 group-hover:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
@@ -96,7 +96,7 @@ include 'header.php';
             <div class="mt-2 text-4xl font-black text-slate-800 group-hover:text-blue-700 transition-colors"><?php echo $totaal_banden; ?> <span class="text-lg text-slate-400 font-medium">banden</span></div>
         </a>
         
-        <a href="voorraad.php" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-indigo-400 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between">
+        <a href="voorraad.php" class="min-w-0 bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-indigo-400 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between">
             <div class="flex justify-between items-start">
                 <div class="text-sm font-semibold text-slate-500 uppercase tracking-wide group-hover:text-indigo-600 transition-colors">Complete Sets</div>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300 group-hover:text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
@@ -106,7 +106,7 @@ include 'header.php';
             <div class="mt-2 text-4xl font-black text-slate-800 group-hover:text-indigo-700 transition-colors"><?php echo $totaal_sets; ?> <span class="text-lg text-slate-400 font-medium">sets</span></div>
         </a>
 
-        <a href="magazijn.php" class="lg:col-span-2 bg-slate-800 p-5 sm:p-6 rounded-xl shadow-sm border border-slate-700 hover:shadow-lg hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+        <a href="magazijn.php" class="min-w-0 block w-full lg:col-span-2 bg-slate-800 p-5 sm:p-6 rounded-xl shadow-sm border border-slate-700 hover:shadow-lg hover:border-slate-500 transition-all cursor-pointer group relative overflow-hidden flex flex-col">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 mb-4 gap-3">
                 <div class="text-sm font-semibold text-slate-300 uppercase tracking-wide group-hover:text-white transition-colors flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
@@ -123,8 +123,8 @@ include 'header.php';
                 </div>
             </div>
             
-            <div class="w-full overflow-x-auto hide-scrollbar pb-2 relative z-10 min-w-0">
-                <div class="grid grid-cols-6 lg:grid-cols-12 gap-2 sm:gap-3 min-w-[550px] lg:min-w-0">
+            <div class="w-full max-w-full overflow-x-auto hide-scrollbar pb-2 relative z-10 min-w-0 flex-grow">
+                <div class="w-max grid grid-cols-6 lg:grid-cols-12 gap-2 sm:gap-3 min-w-[550px] lg:min-w-0 pr-4">
                     <?php 
                     $racks = range(1, 12);
                     $cols = ['A','B','C','D','E','F','G','H'];
@@ -154,19 +154,19 @@ include 'header.php';
                 </div>
             </div>
             
-            <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-blue-500 rounded-full opacity-10 blur-xl group-hover:opacity-20 transition-opacity"></div>
+            <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-blue-500 rounded-full opacity-10 blur-xl group-hover:opacity-20 transition-opacity pointer-events-none"></div>
         </a>
     </div>
 
     <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
         Voorraad per Velgmaat <span class="text-sm font-normal text-slate-400">(Klik om te filteren)</span>
     </h2>
-    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10">
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-10 w-full min-w-0">
         <?php foreach ($rim_stats as $stat): ?>
-            <a href="voorraad.php?rim=<?php echo $stat['rim']; ?>" class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center justify-center hover:shadow-md hover:border-blue-400 hover:-translate-y-1 transition-all cursor-pointer group">
+            <a href="voorraad.php?rim=<?php echo $stat['rim']; ?>" class="min-w-0 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col items-center justify-center hover:shadow-md hover:border-blue-400 hover:-translate-y-1 transition-all cursor-pointer group">
                 <div class="text-slate-400 text-sm font-bold mb-1 group-hover:text-blue-500 transition-colors">INCH</div>
                 <div class="text-3xl font-black text-slate-800 mb-2 group-hover:text-blue-700 transition-colors"><?php echo $stat['rim']; ?>"</div>
-                <div class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold group-hover:bg-blue-50 group-hover:text-blue-700 transition-colors">
+                <div class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold group-hover:bg-blue-50 group-hover:text-blue-700 transition-colors whitespace-nowrap">
                     <?php echo $stat['amount']; ?> banden
                 </div>
             </a>
@@ -176,20 +176,20 @@ include 'header.php';
         <?php endif; ?>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+    <div class="w-full min-w-0 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
         <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <h2 class="font-bold text-lg text-slate-800">Laatst Ingevoerde Banden/Sets</h2>
             <a href="voorraad.php" class="text-sm font-bold text-blue-600 hover:text-blue-800">Bekijk alles &rarr;</a>
         </div>
-        <div class="overflow-x-auto w-full">
+        <div class="w-full max-w-full overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-white">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Type/Set & QR Codes</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Maat</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Merk & Model</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Locatie</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider">Actie</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">Type/Set & QR Codes</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">Maat</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">Merk & Model</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">Locatie</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-slate-500 uppercase tracking-wider whitespace-nowrap">Actie</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-slate-200">
