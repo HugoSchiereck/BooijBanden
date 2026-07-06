@@ -40,6 +40,14 @@ $btw_amount = $total_incl_btw - $total_excl_btw;
 
 $date_formatted = date('d-m-Y H:i', strtotime($order['completed_at']));
 $order_number = str_pad($order['id'], 5, "0", STR_PAD_LEFT);
+
+// Formatteer kenteken voor weergave
+function formatteerKenteken($lp) {
+    if (strlen($lp) === 6) {
+        return substr($lp, 0, 2) . '-' . substr($lp, 2, 2) . '-' . substr($lp, 4, 2);
+    }
+    return $lp;
+}
 ?>
 <!DOCTYPE html>
 <html lang="nl">
@@ -71,6 +79,7 @@ $order_number = str_pad($order['id'], 5, "0", STR_PAD_LEFT);
         .text-right { text-align: right; }
         .text-left { text-align: left; }
         .bold { font-weight: bold; }
+        .uppercase { text-transform: uppercase; }
         
         .divider {
             border-top: 1px dashed #000;
@@ -106,6 +115,10 @@ $order_number = str_pad($order['id'], 5, "0", STR_PAD_LEFT);
             background: #2563eb; color: white; border: none; padding: 10px 20px;
             font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer;
             text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
         .btn:hover { background: #1d4ed8; }
 
@@ -122,15 +135,18 @@ $order_number = str_pad($order['id'], 5, "0", STR_PAD_LEFT);
 
     <div style="display: flex; flex-direction: column; align-items: center;">
         <div class="controls no-print">
-            <button onclick="window.print()" class="btn">🖨️ Afdrukken</button>
+            <button onclick="window.print()" class="btn">
+                <svg style="width: 16px; height: 16px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                Afdrukken
+            </button>
             <p style="font-family: sans-serif; font-size: 12px; color: #666; margin-top: 10px;">Geschikt voor 80mm kassabon of A4-formaat.</p>
         </div>
 
         <div class="receipt-container">
             <div class="header text-center">
                 <h1>Booij Banden</h1>
-                <p>Bandweg 1<br>1234 AB, Autostad</p>
-                <p>Tel: 0123-456789<br>KVK: 12345678</p>
+                <p>Plantijnweg 30<br>4104 BB Culemborg</p>
+                <p>Tel: 06-41595931</p>
             </div>
             
             <div class="divider"></div>
@@ -148,6 +164,12 @@ $order_number = str_pad($order['id'], 5, "0", STR_PAD_LEFT);
                     <td>Klant:</td>
                     <td class="text-right bold"><?php echo htmlspecialchars($order['customer_name']); ?></td>
                 </tr>
+                <?php if (!empty($order['license_plate'])): ?>
+                <tr>
+                    <td>Kenteken:</td>
+                    <td class="text-right bold uppercase"><?php echo htmlspecialchars(formatteerKenteken($order['license_plate'])); ?></td>
+                </tr>
+                <?php endif; ?>
             </table>
 
             <div class="divider"></div>
