@@ -64,29 +64,26 @@ $pageTitle = "Dashboard";
 include 'header.php';
 ?>
 
-<main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+<main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
     
-    <!-- Top Sectie: Welkom & Snelkoppelingen -->
     <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+        <div class="w-full md:w-auto">
             <h1 class="text-3xl font-bold text-slate-800">Welkom, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
             <p class="text-slate-500 mt-1">Hier is een overzicht van de huidige voorraad in het magazijn.</p>
         </div>
         
-        <!-- Snelkoppelingen Knoppen -->
-        <div class="flex flex-wrap gap-3">
-            <a href="invoer.php" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-sm transition-all flex items-center gap-2 hover:-translate-y-0.5">
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto mt-2 md:mt-0">
+            <a href="invoer.php" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-2.5 px-5 rounded-lg shadow-sm transition-all flex justify-center items-center gap-2 hover:-translate-y-0.5">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                 Nieuwe Invoer
             </a>
-            <a href="combineren.php" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-sm transition-all flex items-center gap-2 hover:-translate-y-0.5">
+            <a href="combineren.php" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 sm:py-2.5 px-5 rounded-lg shadow-sm transition-all flex justify-center items-center gap-2 hover:-translate-y-0.5">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" /></svg>
                 Sets Combineren
             </a>
         </div>
     </div>
 
-    <!-- Statistieken & Mini-map -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         
         <a href="voorraad.php" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:shadow-md hover:border-blue-400 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between">
@@ -109,17 +106,16 @@ include 'header.php';
             <div class="mt-2 text-4xl font-black text-slate-800 group-hover:text-indigo-700 transition-colors"><?php echo $totaal_sets; ?> <span class="text-lg text-slate-400 font-medium">sets</span></div>
         </a>
 
-        <!-- Blueprint Map: Volledige 960 vakken visualisatie -->
-        <a href="magazijn.php" class="lg:col-span-2 bg-slate-800 p-5 sm:p-6 rounded-xl shadow-sm border border-slate-700 hover:shadow-lg hover:border-slate-500 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden">
-            <div class="flex flex-col sm:flex-row justify-between items-start relative z-10 mb-4 gap-2">
+        <a href="magazijn.php" class="lg:col-span-2 bg-slate-800 p-5 sm:p-6 rounded-xl shadow-sm border border-slate-700 hover:shadow-lg hover:border-slate-500 transition-all cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center relative z-10 mb-4 gap-3">
                 <div class="text-sm font-semibold text-slate-300 uppercase tracking-wide group-hover:text-white transition-colors flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                     </svg>
                     Blueprint Magazijn
                 </div>
-                <!-- Mini legenda -->
-                <div class="text-[10px] sm:text-xs text-slate-300 font-medium flex gap-2 sm:gap-3 bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-700">
+                
+                <div class="text-[10px] sm:text-xs text-slate-300 font-medium flex flex-wrap gap-2 sm:gap-3 bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-700">
                     <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-slate-700 opacity-50"></span> <?php echo $loc_leeg; ?></span>
                     <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-400"></span> <?php echo $loc_vrij; ?></span>
                     <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-amber-400"></span> <?php echo $loc_bijna; ?></span>
@@ -127,42 +123,41 @@ include 'header.php';
                 </div>
             </div>
             
-            <!-- Het Blueprint Grid -->
-            <div class="grid grid-cols-4 sm:grid-cols-6 gap-2 sm:gap-3 relative z-10 w-full">
-                <?php 
-                $racks = range(1, 12);
-                $cols = ['A','B','C','D','E','F','G','H'];
-                $levels = range(10, 1);
-                
-                foreach($racks as $rack): ?>
-                    <div class="flex flex-col items-center">
-                        <div class="text-[8px] sm:text-[9px] font-bold text-slate-500 mb-0.5">ST <?php echo $rack; ?></div>
-                        <div class="grid grid-cols-8 gap-[1px] bg-slate-900 p-[2px] rounded border border-slate-700 w-full">
-                            <?php 
-                            foreach($levels as $level):
-                                foreach($cols as $col):
-                                    $c = isset($mapData[$rack][$col][$level]) ? $mapData[$rack][$col][$level] : 0;
-                                    
-                                    if ($c === 0) { $color = 'bg-slate-700 opacity-30'; } // LEEG
-                                    elseif ($c <= 4) { $color = 'bg-blue-400'; }         // VRIJ
-                                    elseif ($c <= 7) { $color = 'bg-amber-400'; }        // BIJNA VOL
-                                    else { $color = 'bg-red-500 shadow-[0_0_2px_rgba(239,68,68,0.8)] z-10 relative'; } // VOL
-                                    
-                                    echo '<div class="w-full aspect-square rounded-[1px] ' . $color . '" title="Locatie '.$rack.$col.$level.': '.$c.' band(en)"></div>';
+            <div class="w-full overflow-x-auto hide-scrollbar pb-2 relative z-10">
+                <div class="grid grid-cols-6 lg:grid-cols-12 gap-2 sm:gap-3 min-w-[550px] lg:min-w-0">
+                    <?php 
+                    $racks = range(1, 12);
+                    $cols = ['A','B','C','D','E','F','G','H'];
+                    $levels = range(10, 1);
+                    
+                    foreach($racks as $rack): ?>
+                        <div class="flex flex-col items-center">
+                            <div class="text-[8px] sm:text-[9px] font-bold text-slate-500 mb-0.5">ST <?php echo $rack; ?></div>
+                            <div class="grid grid-cols-8 gap-[1px] bg-slate-900 p-[2px] rounded border border-slate-700 w-full">
+                                <?php 
+                                foreach($levels as $level):
+                                    foreach($cols as $col):
+                                        $c = isset($mapData[$rack][$col][$level]) ? $mapData[$rack][$col][$level] : 0;
+                                        
+                                        if ($c === 0) { $color = 'bg-slate-700 opacity-30'; } // LEEG
+                                        elseif ($c <= 4) { $color = 'bg-blue-400'; }         // VRIJ
+                                        elseif ($c <= 7) { $color = 'bg-amber-400'; }        // BIJNA VOL
+                                        else { $color = 'bg-red-500 shadow-[0_0_2px_rgba(239,68,68,0.8)] z-10 relative'; } // VOL
+                                        
+                                        echo '<div class="w-full aspect-square rounded-[1px] ' . $color . '" title="Locatie '.$rack.$col.$level.': '.$c.' band(en)"></div>';
+                                    endforeach;
                                 endforeach;
-                            endforeach;
-                            ?>
+                                ?>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
             </div>
             
-            <!-- Achtergrond glow -->
             <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-blue-500 rounded-full opacity-10 blur-xl group-hover:opacity-20 transition-opacity"></div>
         </a>
     </div>
 
-    <!-- Overzicht per Inch -->
     <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
         Voorraad per Velgmaat <span class="text-sm font-normal text-slate-400">(Klik om te filteren)</span>
     </h2>
@@ -181,13 +176,12 @@ include 'header.php';
         <?php endif; ?>
     </div>
 
-    <!-- Laatst toegevoegd -->
     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
         <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
             <h2 class="font-bold text-lg text-slate-800">Laatst Ingevoerde Banden/Sets</h2>
             <a href="voorraad.php" class="text-sm font-bold text-blue-600 hover:text-blue-800">Bekijk alles &rarr;</a>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto w-full">
             <table class="min-w-full divide-y divide-slate-200">
                 <thead class="bg-white">
                     <tr>
