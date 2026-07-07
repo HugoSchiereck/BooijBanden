@@ -29,21 +29,33 @@ $tires = $stmt->fetchAll();
 if (empty($tires)) {
     die("Geen bandengegevens gevonden.");
 }
+
+// Helper functie om de EU-label kleur te bepalen o.b.v. profieldiepte
+function getTreadDepthColor($is_new, $depth) {
+    if ($is_new) return ['bg' => '#009640', 'letter' => 'A', 'text' => 'NIEUW']; // Donkergroen
+    if ($depth >= 7.0) return ['bg' => '#50B848', 'letter' => 'B', 'text' => $depth . ' mm']; // Lichtgroen
+    if ($depth >= 5.0) return ['bg' => '#C4D42A', 'letter' => 'C', 'text' => $depth . ' mm']; // Geelgroen
+    if ($depth >= 4.0) return ['bg' => '#F2C700', 'letter' => 'D', 'text' => $depth . ' mm']; // Geel
+    if ($depth >= 3.0) return ['bg' => '#F39200', 'letter' => 'E', 'text' => $depth . ' mm']; // Oranje
+    if ($depth >= 2.0) return ['bg' => '#E37222', 'letter' => 'F', 'text' => $depth . ' mm']; // Donkeroranje
+    return ['bg' => '#E3000F', 'letter' => 'G', 'text' => $depth . ' mm']; // Rood (Vervangen)
+}
 ?>
 <!DOCTYPE html>
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Labels Printen</title>
+    <title>EU Style Labels Printen</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
-        /* Basis styling voor het scherm (zodat je ziet wat je doet) */
+        @import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700;900&display=swap');
+
         body {
-            background-color: #f1f5f9;
-            font-family: Arial, sans-serif;
+            background-color: #e2e8f0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 20px;
             display: flex;
             flex-direction: column;
@@ -51,49 +63,153 @@ if (empty($tires)) {
             gap: 20px;
         }
 
-        /* * HET ETIKET ONTWERP
-         * Pas hier de width en height aan naar de maat van jouw Zebra rollen! 
-         * Voorbeeld: 70mm x 50mm is een veelgebruikte magazijnmaat.
-         */
-        .label-container {
+        /* 70x100mm is een standaard Zebra label (Portret) */
+        .eu-label-container {
             width: 70mm;
-            height: 50mm;
+            height: 100mm;
             background: white;
-            border: 1px dashed #cbd5e1; /* Alleen zichtbaar op scherm, onzichtbaar in print */
             box-sizing: border-box;
-            padding: 4mm;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            overflow: hidden;
-            page-break-after: always; /* Zorgt dat elke sticker op een nieuw velletje komt */
+            padding: 3mm;
+            page-break-after: always;
+            position: relative;
         }
 
-        .label-text {
-            flex-grow: 1;
-            padding-right: 4mm;
+        /* De karakteristieke blauwe buitenrand van het EU Label */
+        .eu-border {
+            border: 3px solid #005A9C;
+            border-radius: 10px;
+            height: 100%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            height: 100%;
+            padding: 2mm;
+            box-sizing: border-box;
         }
 
-        .l-brand { font-size: 14px; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
-        .l-model { font-size: 10px; color: #333; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 35mm;}
-        .l-size { font-size: 16px; font-weight: 900; margin-bottom: 6px; }
-        .l-info { font-size: 10px; font-weight: bold; }
-        .l-code { font-size: 10px; margin-top: auto; font-family: monospace; }
+        /* Top Box: Merk & Model */
+        .eu-top-box {
+            border: 2px solid #005A9C;
+            border-radius: 8px 8px 0 0;
+            padding: 2mm;
+            text-align: left;
+            margin-bottom: 2mm;
+            position: relative;
+        }
+        .eu-top-box::after {
+            content: '';
+            position: absolute;
+            bottom: -2mm;
+            left: -2px;
+            width: 30%;
+            border-bottom: 2px solid #005A9C;
+        }
 
-        .label-qr {
-            width: 30mm;
-            height: 30mm;
-            flex-shrink: 0;
+        .eu-brand { font-size: 16px; font-weight: 900; text-transform: uppercase; color: #000; line-height: 1; margin-bottom: 1mm;}
+        .eu-model { font-size: 11px; font-weight: 700; color: #333; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        
+        .eu-season { position: absolute; top: 2mm; right: 2mm; font-size: 10px; font-weight: bold; color: #005A9C; text-transform: uppercase; }
+
+        /* Midden: Maat */
+        .eu-size {
+            font-size: 22px;
+            font-weight: 900;
+            text-align: center;
+            margin: 2mm 0;
+            letter-spacing: -0.5px;
+        }
+
+        /* De Gekleurde Pijlen (Profieldiepte) */
+        .eu-middle-box {
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+            gap: 1.5mm;
+            margin-bottom: 3mm;
+            padding: 0 2mm;
         }
 
-        /* Verberg knoppen tijdens het printen */
+        .eu-arrow-row {
+            display: flex;
+            align-items: center;
+            height: 5mm;
+        }
+
+        .eu-arrow {
+            position: relative;
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+            padding-left: 2mm;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            width: 25mm; /* Breedte van de pijl */
+        }
+        .eu-arrow::after {
+            content: '';
+            position: absolute;
+            right: -2.5mm;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-top: 2.5mm solid transparent;
+            border-bottom: 2.5mm solid transparent;
+        }
+
+        .eu-tread-value {
+            margin-left: auto;
+            font-size: 14px;
+            font-weight: 900;
+            color: #000;
+        }
+
+        /* Bottom Box: QR Code */
+        .eu-bottom-box {
+            border: 2px solid #005A9C;
+            border-radius: 0 0 8px 8px;
+            margin-top: auto;
+            padding: 2mm;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .eu-bottom-box::before {
+            content: '';
+            position: absolute;
+            top: -2mm;
+            left: -2px;
+            width: 30%;
+            border-top: 2px solid #005A9C;
+        }
+
+        .qr-wrapper {
+            width: 22mm;
+            height: 22mm;
+        }
+
+        .qr-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .qr-label {
+            background-color: #000;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 900;
+            padding: 1mm 3mm;
+            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%);
+            margin-bottom: 2mm;
+        }
+
+        .qr-id {
+            font-size: 11px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #333;
+        }
+
         .no-print {
             padding: 10px 20px;
             background-color: #2563eb;
@@ -106,18 +222,15 @@ if (empty($tires)) {
             margin-bottom: 10px;
         }
 
-        /* De Print Specifieke regels */
         @media print {
             body { margin: 0; background: white; display: block; }
             .no-print { display: none !important; }
-            .label-container { 
-                border: none; 
+            .eu-label-container { 
                 margin: 0; 
-                page-break-after: always;
+                padding: 2mm; /* Kleine veiligheidsmarge voor printer */
             }
-            /* Dwing de browser om exact dit formaat papier te gebruiken */
             @page {
-                size: 70mm 50mm; 
+                size: 70mm 100mm; 
                 margin: 0;
             }
         }
@@ -126,45 +239,93 @@ if (empty($tires)) {
 <body>
 
     <div class="no-print text-center">
-        <h2>Controleer de labels</h2>
-        <p>Zorg dat in het printscherm 'Marges' op <b>Geen</b> staat, en het juiste papierformaat is geselecteerd.</p>
+        <h2>EU-Style Labels Printen</h2>
+        <p>Zorg dat in het printscherm 'Marges' op <b>Geen</b> staat. Papierformaat: <b>70x100mm</b>.</p>
         <button onclick="window.print();" class="no-print">🖨️ Print Labels Nu</button>
-        <a href="javascript:history.back()" style="display:block; margin-top:10px; color:#475569;">&larr; Terug</a>
+        <a href="javascript:history.back()" style="display:block; margin-top:10px; color:#475569;">&larr; Terug naar overzicht</a>
     </div>
 
-    <?php foreach ($tires as $index => $tire): ?>
-        <div class="label-container">
-            <div class="label-text">
-                <div>
-                    <div class="l-brand"><?php echo htmlspecialchars($tire['brand']); ?></div>
-                    <div class="l-model"><?php echo htmlspecialchars($tire['model']); ?></div>
-                    <div class="l-size"><?php echo $tire['width'].'/'.$tire['ratio'].' R'.$tire['rim']; ?></div>
-                    <div class="l-info">
-                        <?php echo $tire['season']; ?> | <?php echo $tire['is_new'] ? 'NIEUW' : $tire['tread_depth'].' mm'; ?>
+    <?php foreach ($tires as $index => $tire): 
+        // Bepaal de kleuren en letters
+        $treadInfo = getTreadDepthColor($tire['is_new'], $tire['tread_depth']);
+        $activeColor = $treadInfo['bg'];
+        $activeLetter = $treadInfo['letter'];
+        $activeText = $treadInfo['text'];
+    ?>
+        <div class="eu-label-container">
+            <div class="eu-border">
+                
+                <div class="eu-top-box">
+                    <div class="eu-season"><?php echo htmlspecialchars($tire['season']); ?></div>
+                    <div class="eu-brand"><?php echo htmlspecialchars($tire['brand']); ?></div>
+                    <div class="eu-model"><?php echo htmlspecialchars($tire['model']); ?></div>
+                </div>
+
+                <div class="eu-size">
+                    <?php echo $tire['width'].'/'.$tire['ratio'].' R'.$tire['rim']; ?>
+                </div>
+
+                <div class="eu-middle-box">
+                    <div class="text-[9px] font-bold text-[#005A9C] mb-1 uppercase text-center border-b border-[#005A9C] pb-0.5">Profieldiepte / Staat</div>
+                    
+                    <?php 
+                    // We tekenen 4 representatieve EU-pijlen
+                    $bars = [
+                        ['bg' => '#009640', 'l' => 'A'],
+                        ['bg' => '#C4D42A', 'l' => 'C'],
+                        ['bg' => '#F39200', 'l' => 'E'],
+                        ['bg' => '#E3000F', 'l' => 'G']
+                    ];
+                    
+                    foreach($bars as $bar) {
+                        $isActive = ($bar['l'] === $activeLetter || 
+                                    ($activeLetter === 'B' && $bar['l'] === 'A') || 
+                                    ($activeLetter === 'D' && $bar['l'] === 'C') ||
+                                    ($activeLetter === 'F' && $bar['l'] === 'E'));
+                                    
+                        echo '<div class="eu-arrow-row">';
+                        echo '<div class="eu-arrow" style="background-color: '.$bar['bg'].'; width: '.($isActive ? '30mm' : '20mm').';">';
+                        echo '<style>.eu-arrow[style*="'.$bar['bg'].'"]::after { border-left: 2.5mm solid '.$bar['bg'].'; }</style>';
+                        echo $bar['l'];
+                        echo '</div>';
+                        
+                        if ($isActive) {
+                            echo '<div class="eu-tread-value" style="color: '.$activeColor.';">'.$activeText.'</div>';
+                        }
+                        echo '</div>';
+                    }
+                    ?>
+                </div>
+
+                <div class="eu-bottom-box">
+                    <div class="qr-wrapper" id="qr_<?php echo $index; ?>"></div>
+                    <div class="qr-info">
+                        <div class="qr-label">QR-ID</div>
+                        <div class="qr-id"><?php echo htmlspecialchars($tire['qr_id']); ?></div>
                     </div>
                 </div>
-                <div class="l-code">ID: <?php echo htmlspecialchars($tire['qr_id']); ?></div>
+
             </div>
-            <div class="label-qr" id="qr_<?php echo $index; ?>"></div>
         </div>
         
         <script>
             new QRCode(document.getElementById("qr_<?php echo $index; ?>"), {
                 text: "<?php echo htmlspecialchars($tire['qr_id']); ?>",
-                width: 100, // Resolutie van de QR
-                height: 100,
+                width: 80, // Past perfect in de 22mm wrapper
+                height: 80,
                 colorDark : "#000000",
                 colorLight : "#ffffff",
-                correctLevel : QRCode.CorrectLevel.H
+                correctLevel : QRCode.CorrectLevel.M
             });
         </script>
     <?php endforeach; ?>
 
     <script>
+        // Auto-print functie
         window.onload = function() {
             setTimeout(function() {
                 window.print();
-            }, 500); // Korte pauze zodat de QR codes tijd hebben om te tekenen
+            }, 600);
         };
     </script>
 </body>
