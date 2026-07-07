@@ -30,7 +30,7 @@ if (empty($tires)) {
     die("Geen bandengegevens gevonden.");
 }
 
-// Helper functie om de EU-label kleur te bepalen o.b.v. profieldiepte (Nieuwe EU schaal A t/m E)
+// Helper functie om de EU-label kleur te bepalen o.b.v. profieldiepte (EU schaal A t/m E)
 function getTreadDepthColor($is_new, $depth) {
     if ($is_new || $depth >= 7.0) return ['bg' => '#009640', 'letter' => 'A', 'text' => $is_new ? 'NIEUW' : $depth . ' mm'];
     if ($depth >= 5.5) return ['bg' => '#50B848', 'letter' => 'B', 'text' => $depth . ' mm'];
@@ -46,23 +46,21 @@ function getTreadDepthColor($is_new, $depth) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Labels Printen - Booij Banden</title>
     
-    <!-- QR Code Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <!-- Tailwind CSS voor de App-Interface (verborgen tijdens printen) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Helvetica+Neue:wght@400;700;900&display=swap');
 
-        /* ALGEMENE PRINT REGELS (Zorgt dat kleuren bewaard blijven) */
+        /* ALGEMENE PRINT REGELS */
         * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
 
         body {
-            background-color: #f8fafc; /* Tailwind slate-50 */
+            background-color: #f8fafc;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -77,47 +75,41 @@ function getTreadDepthColor($is_new, $depth) {
             background: white;
             box-sizing: border-box;
             padding: 3mm;
-            margin: 0 auto 20px auto; /* Voor weergave op scherm */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); /* Schaduw op scherm */
+            margin: 0 auto 20px auto; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
             position: relative;
         }
 
         .eu-border {
             border: 3px solid #005A9C;
-            border-radius: 10px;
+            border-radius: 8px;
             height: 100%;
             display: flex;
             flex-direction: column;
             padding: 2mm;
             box-sizing: border-box;
+            overflow: hidden; /* Zorgt dat niks ooit buiten de lijn breekt */
         }
 
         .eu-top-box {
             border: 2px solid #005A9C;
-            border-radius: 8px 8px 0 0;
-            padding: 2mm;
+            border-radius: 6px;
+            padding: 1.5mm 2mm;
             text-align: left;
             margin-bottom: 2mm;
             position: relative;
-        }
-        .eu-top-box::after {
-            content: '';
-            position: absolute;
-            bottom: -2mm;
-            left: -2px;
-            width: 30%;
-            border-bottom: 2px solid #005A9C;
+            box-sizing: border-box;
         }
 
-        .eu-brand { font-size: 16px; font-weight: 900; text-transform: uppercase; color: #000; line-height: 1; margin-bottom: 1mm;}
-        .eu-model { font-size: 11px; font-weight: 700; color: #333; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
-        .eu-season { position: absolute; top: 2mm; right: 2mm; font-size: 10px; font-weight: bold; color: #005A9C; text-transform: uppercase; }
+        .eu-brand { font-size: 16px; font-weight: 900; text-transform: uppercase; color: #000; line-height: 1.1; margin-bottom: 0.5mm;}
+        .eu-model { font-size: 11px; font-weight: 700; color: #333; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
+        .eu-season { position: absolute; top: 1.5mm; right: 2mm; font-size: 10px; font-weight: bold; color: #005A9C; text-transform: uppercase; }
 
         .eu-size {
             font-size: 22px;
             font-weight: 900;
             text-align: center;
-            margin: 2mm 0;
+            margin: 1.5mm 0;
             letter-spacing: -0.5px;
             color: #000;
         }
@@ -125,32 +117,35 @@ function getTreadDepthColor($is_new, $depth) {
         .eu-middle-box {
             display: flex;
             flex-direction: column;
-            margin-bottom: 3mm;
+            margin-bottom: 2mm;
             padding: 0 2mm;
         }
 
         .eu-bottom-box {
             border: 2px solid #005A9C;
-            border-radius: 0 0 8px 8px;
+            border-radius: 6px;
             margin-top: auto;
-            padding: 2mm;
+            padding: 1.5mm 2mm;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: relative;
-        }
-        .eu-bottom-box::before {
-            content: '';
-            position: absolute;
-            top: -2mm;
-            left: -2px;
-            width: 30%;
-            border-top: 2px solid #005A9C;
+            box-sizing: border-box;
+            width: 100%;
         }
 
+        /* QR Wrapper fix: forceer afbeelding limieten! */
         .qr-wrapper {
             width: 22mm;
             height: 22mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-wrapper img, .qr-wrapper canvas {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain;
         }
 
         .qr-info {
@@ -165,9 +160,9 @@ function getTreadDepthColor($is_new, $depth) {
             color: #fff;
             font-size: 14px;
             font-weight: 900;
-            padding: 1mm 3mm;
-            clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%);
-            margin-bottom: 2mm;
+            padding: 0.5mm 3mm;
+            clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%);
+            margin-bottom: 1.5mm;
         }
 
         .qr-id {
@@ -191,9 +186,9 @@ function getTreadDepthColor($is_new, $depth) {
             }
             .eu-label-container { 
                 margin: 0; 
-                padding: 1mm; /* Kleine marge voor de rand van de zebra sticker */
-                box-shadow: none; /* Verwijder scherm-schaduw */
-                page-break-after: always; /* Zorg dat elke band op een nieuwe sticker komt */
+                padding: 0; 
+                box-shadow: none; 
+                page-break-after: always;
             }
             @page {
                 size: 70mm 100mm; 
@@ -204,7 +199,6 @@ function getTreadDepthColor($is_new, $depth) {
 </head>
 <body class="pb-20">
 
-    <!-- DE SCHERM INTERFACE (Deze zie je niet op de print) -->
     <div class="no-print max-w-2xl mx-auto mt-10 mb-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-blue-600 px-6 py-4 flex items-center justify-between">
             <h2 class="text-white font-black text-xl flex items-center gap-2">
@@ -242,10 +236,8 @@ function getTreadDepthColor($is_new, $depth) {
         </div>
     </div>
 
-    <!-- HET ECHTE ETIKETTEN OVERZICHT -->
     <div class="flex flex-wrap justify-center gap-8">
         <?php foreach ($tires as $index => $tire): 
-            // Bepaal de kleuren en letters o.b.v. profiel
             $treadInfo = getTreadDepthColor($tire['is_new'], $tire['tread_depth']);
             $activeColor = $treadInfo['bg'];
             $activeLetter = $treadInfo['letter'];
@@ -254,24 +246,20 @@ function getTreadDepthColor($is_new, $depth) {
             <div class="eu-label-container">
                 <div class="eu-border">
                     
-                    <!-- Top: Merk & Model -->
                     <div class="eu-top-box">
                         <div class="eu-season"><?php echo htmlspecialchars($tire['season']); ?></div>
                         <div class="eu-brand"><?php echo htmlspecialchars($tire['brand']); ?></div>
                         <div class="eu-model"><?php echo htmlspecialchars($tire['model']); ?></div>
                     </div>
 
-                    <!-- Midden: Maat -->
                     <div class="eu-size">
                         <?php echo $tire['width'].'/'.$tire['ratio'].' R'.$tire['rim']; ?>
                     </div>
 
-                    <!-- Pijlen (Visualisatie Profieldiepte) -->
                     <div class="eu-middle-box">
                         <div style="font-size: 10px; font-weight: bold; color: #005A9C; margin-bottom: 2mm; text-transform: uppercase; border-bottom: 1px solid #005A9C; padding-bottom: 1mm;">Profieldiepte / Staat</div>
                         
                         <?php 
-                        // Hardgecodeerde HTML blokken voor de pijlen (Nieuwe EU standaard A t/m E)
                         $bars = [
                             ['bg' => '#009640', 'l' => 'A'],
                             ['bg' => '#50B848', 'l' => 'B'],
@@ -282,31 +270,24 @@ function getTreadDepthColor($is_new, $depth) {
                         
                         foreach($bars as $bar) {
                             $isActive = ($bar['l'] === $activeLetter);
-                                        
                             $width = $isActive ? '30mm' : '15mm';
                             ?>
                             
-                            <!-- 100% Inline CSS Pijl Constructie voor robuust printen -->
                             <div style="display: flex; align-items: center; height: 5mm; margin-bottom: 1.5mm;">
-                                <!-- Pijl Lichaam -->
                                 <div style="background-color: <?php echo $bar['bg']; ?>; width: <?php echo $width; ?>; height: 100%; color: white; font-weight: bold; font-size: 11px; padding-left: 2mm; display: flex; align-items: center; box-sizing: border-box;">
                                     <?php echo $bar['l']; ?>
                                 </div>
-                                <!-- Pijl Punt (Driehoek) -->
                                 <div style="width: 0; height: 0; border-top: 2.5mm solid transparent; border-bottom: 2.5mm solid transparent; border-left: 2.5mm solid <?php echo $bar['bg']; ?>;"></div>
                                 
-                                <!-- Resultaat Tekst (Alleen als actief) -->
                                 <?php if ($isActive): ?>
                                     <div style="margin-left: auto; font-size: 15px; font-weight: 900; color: <?php echo $activeColor; ?>;">
                                         <?php echo $activeText; ?>
                                     </div>
                                 <?php endif; ?>
                             </div>
-
                         <?php } ?>
                     </div>
 
-                    <!-- Bottom: QR Code & ID -->
                     <div class="eu-bottom-box">
                         <div class="qr-wrapper" id="qr_<?php echo $index; ?>"></div>
                         <div class="qr-info">
@@ -318,12 +299,11 @@ function getTreadDepthColor($is_new, $depth) {
                 </div>
             </div>
             
-            <!-- Teken de QR code -->
             <script>
                 new QRCode(document.getElementById("qr_<?php echo $index; ?>"), {
                     text: "<?php echo htmlspecialchars($tire['qr_id']); ?>",
-                    width: 80, 
-                    height: 80,
+                    width: 70, // Iets kleiner opgebouwd voor veiligheid
+                    height: 70,
                     colorDark : "#000000",
                     colorLight : "#ffffff",
                     correctLevel : QRCode.CorrectLevel.M
@@ -332,7 +312,6 @@ function getTreadDepthColor($is_new, $depth) {
         <?php endforeach; ?>
     </div>
 
-    <!-- Auto-print na kort wachten -->
     <script>
         window.onload = function() {
             setTimeout(function() {
