@@ -130,15 +130,17 @@ $pageTitle = "Banden Combineren";
 include 'header.php';
 ?>
 
-<main class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<main class="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8 overflow-hidden">
     
-    <div class="mb-6">
+    <div class="mb-6 w-full min-w-0">
         <h1 class="text-3xl font-bold text-slate-800">Banden Combineren tot Sets</h1>
         <p class="text-slate-500 mt-1">Smeed losse banden samen tot sets van 2 of 4 voor de verkoop.</p>
     </div>
 
     <?php if ($msg): ?>
-        <div class="bg-green-50 border-l-4 border-green-500 p-5 mb-6 rounded-r shadow-sm">
+        <div class="bg-green-50 border-l-4 border-green-500 p-5 mb-6 rounded-r shadow-sm w-full min-w-0">
             <h3 class="text-green-800 font-bold text-lg"><?php echo $msg; ?></h3>
             <p class="text-green-700 mt-1">Vergeet niet om de banden fysiek te verplaatsen in het magazijn!</p>
             <?php if ($first_qr): ?>
@@ -151,15 +153,15 @@ include 'header.php';
         </div>
     <?php endif; ?>
     <?php if ($error): ?>
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded shadow-sm text-red-800 font-medium"><?php echo $error; ?></div>
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded shadow-sm text-red-800 font-medium w-full min-w-0"><?php echo $error; ?></div>
     <?php endif; ?>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start w-full min-w-0">
         
-        <div class="lg:col-span-1 flex flex-col gap-6 sticky top-24">
+        <div class="lg:col-span-1 flex flex-col gap-6 sticky top-24 min-w-0 w-full">
             
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-100 bg-blue-50">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden w-full min-w-0">
+                <div class="px-6 py-4 border-b border-slate-100 bg-blue-50 flex justify-between items-center">
                     <h2 class="font-bold text-lg text-blue-900 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clip-rule="evenodd" />
@@ -168,10 +170,16 @@ include 'header.php';
                     </h2>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-600 mb-4">Gebruik je handscanner of typ de QR-codes in. Druk op <i>Enter</i> na elke band.</p>
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Te koppelen codes</p>
+                        <button type="button" onclick="startCameraScanner('textarea')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 font-bold px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                            Scan band
+                        </button>
+                    </div>
                     <form method="POST" action="">
                         <div class="mb-4">
-                            <textarea name="qr_codes" rows="5" class="w-full border border-slate-300 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="TEST001&#10;TEST002" required autofocus></textarea>
+                            <textarea name="qr_codes" id="qr_codes_textarea" rows="4" class="w-full border border-slate-300 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm" placeholder="Typ of scan codes hier...&#10;Druk op Enter na elke code" required autofocus></textarea>
                         </div>
                         <button type="submit" name="make_set" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
                             Maak Set van Scans
@@ -180,7 +188,7 @@ include 'header.php';
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden w-full min-w-0">
                 <div class="px-6 py-4 border-b border-slate-100 bg-red-50">
                     <h2 class="font-bold text-lg text-red-900 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -190,10 +198,17 @@ include 'header.php';
                     </h2>
                 </div>
                 <div class="p-6">
-                    <p class="text-sm text-slate-600 mb-4">Scan <strong>één band</strong> uit een set om de hele set op te heffen. <br><br><span class="text-xs text-red-600 font-bold">Let op: Alleen banden met status 'In Voorraad' verschijnen daarna weer in de suggesties hiernaast!</span></p>
+                    <p class="text-sm text-slate-600 mb-4">Scan <strong>één band</strong> uit een set om de hele set op te heffen. <br><br><span class="text-xs text-red-600 font-bold">Let op: Alleen banden met status 'In Voorraad' verschijnen daarna weer in de suggesties.</span></p>
                     <form method="POST" action="">
                         <div class="mb-4">
-                            <input type="text" name="qr_split" class="w-full border border-slate-300 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500 font-mono text-sm uppercase" placeholder="TEST001" required>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500">Band Code</label>
+                                <button type="button" onclick="startCameraScanner('input')" class="text-blue-600 bg-blue-50 hover:bg-blue-100 font-bold px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                                    Camera
+                                </button>
+                            </div>
+                            <input type="text" name="qr_split" id="qr_split_input" class="w-full border border-slate-300 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:ring-red-500 font-mono text-sm uppercase" placeholder="Typ of scan code" required>
                         </div>
                         <button type="submit" name="split_set" class="w-full bg-white border border-red-300 hover:bg-red-50 text-red-700 font-bold py-3 px-4 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
                             Opheffen / Splitsen
@@ -204,7 +219,7 @@ include 'header.php';
 
         </div>
 
-        <div class="lg:col-span-2">
+        <div class="lg:col-span-2 w-full min-w-0">
             <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                 ✨ Systeem Suggesties 
                 <span class="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full"><?php echo count($suggestions); ?> gevonden</span>
@@ -215,7 +230,7 @@ include 'header.php';
                     <p class="text-slate-500 font-medium">Het systeem kan momenteel geen losse banden vinden die exact met elkaar overeenkomen (Merk, Model, Maat, Profiel).</p>
                 </div>
             <?php else: ?>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full min-w-0">
                     <?php foreach ($suggestions as $sug): 
                         $set_size = $sug['match_count'] >= 4 ? 4 : 2;
                         
@@ -227,7 +242,7 @@ include 'header.php';
                         $loc_string = implode(' & ', $locs);
                         $is_scattered = count($locs) > 1; 
                     ?>
-                        <div class="bg-white rounded-xl shadow-sm border <?php echo $is_scattered ? 'border-amber-300' : 'border-slate-200'; ?> p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
+                        <div class="bg-white rounded-xl shadow-sm border <?php echo $is_scattered ? 'border-amber-300' : 'border-slate-200'; ?> p-5 flex flex-col justify-between hover:shadow-md transition-shadow min-w-0">
                             
                             <div>
                                 <div class="flex justify-between items-start mb-2">
@@ -241,20 +256,20 @@ include 'header.php';
                                     <?php endif; ?>
                                 </div>
                                 
-                                <h3 class="font-black text-xl text-slate-900 mt-2">
+                                <h3 class="font-black text-xl text-slate-900 mt-2 truncate">
                                     <?php echo $sug['width'].'/'.$sug['ratio'].' R'.$sug['rim']; ?>
                                 </h3>
-                                <p class="font-bold text-slate-700"><?php echo htmlspecialchars($sug['brand'] . ' ' . $sug['model']); ?></p>
+                                <p class="font-bold text-slate-700 truncate"><?php echo htmlspecialchars($sug['brand'] . ' ' . $sug['model']); ?></p>
                                 
                                 <div class="flex items-center gap-2 mt-2 text-sm">
                                     <span class="text-slate-600 font-medium"><?php echo htmlspecialchars($sug['season']); ?></span>
                                     <span class="text-slate-300">•</span>
-                                    <span class="font-bold text-slate-700">Profielen: <?php echo $sug['tread_depths']; ?></span>
+                                    <span class="font-bold text-slate-700 truncate">Profielen: <?php echo $sug['tread_depths']; ?></span>
                                 </div>
                                 
                                 <div class="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100">
                                     <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Huidige Locaties</p>
-                                    <p class="font-mono font-bold text-slate-800"><?php echo htmlspecialchars($loc_string); ?></p>
+                                    <p class="font-mono font-bold text-slate-800 truncate"><?php echo htmlspecialchars($loc_string); ?></p>
                                 </div>
                             </div>
                             
@@ -274,5 +289,68 @@ include 'header.php';
         
     </div>
 </main>
+
+<div id="cameraModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-75 flex justify-center items-center z-50 px-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                Scan QR Code
+            </h3>
+            <button onclick="stopCameraScanner()" class="text-slate-400 hover:text-slate-600 transition-colors bg-slate-200 rounded p-1">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div id="qr-reader" style="width: 100%;" class="bg-black"></div>
+        <div class="p-4 text-center bg-slate-50">
+            <p class="text-sm text-slate-500">Richt de camera op de sticker. De code wordt automatisch ingevuld in het geselecteerde veld.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let html5QrcodeScanner = null;
+    let scanTarget = ''; // Kan 'textarea' of 'input' zijn
+
+    function startCameraScanner(target) {
+        scanTarget = target;
+        
+        // Open de modal
+        document.getElementById('cameraModal').classList.remove('hidden');
+        
+        // Start de camera configuratie
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", 
+            { fps: 10, qrbox: {width: 250, height: 250} },
+            /* verbose= */ false
+        );
+        
+        // Koppel succes-actie
+        html5QrcodeScanner.render(onScanSuccess);
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // 1. Sluit de scanner af
+        html5QrcodeScanner.clear();
+        document.getElementById('cameraModal').classList.add('hidden');
+        
+        // 2. Vul het juiste tekstveld in op basis van de target
+        if (scanTarget === 'textarea') {
+            let el = document.getElementById('qr_codes_textarea');
+            // Voeg de gescande code toe en zet er een enter (\n) achter
+            el.value += decodedText + '\n';
+        } else if (scanTarget === 'input') {
+            let el = document.getElementById('qr_split_input');
+            el.value = decodedText;
+        }
+    }
+
+    function stopCameraScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+        }
+        document.getElementById('cameraModal').classList.add('hidden');
+    }
+</script>
 
 <?php include 'footer.php'; ?>
