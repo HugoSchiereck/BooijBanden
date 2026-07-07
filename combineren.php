@@ -109,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // --- 3. HAAL SLIMME SUGGESTIES OP ---
-// We zoeken banden die NIET in een set zitten en negeren kleine profieldiepte-verschillen!
 $sql_suggestions = "
     SELECT 
         t.brand, t.model, t.width, t.ratio, t.rim, t.season, t.is_new,
@@ -155,13 +154,11 @@ include 'header.php';
         <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded shadow-sm text-red-800 font-medium"><?php echo $error; ?></div>
     <?php endif; ?>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
-        <!-- Linker Kolom: Scanners -->
-        <div class="lg:col-span-1 flex flex-col gap-6">
+        <div class="lg:col-span-1 flex flex-col gap-6 sticky top-24">
             
-            <!-- MAAK SET -->
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden sticky top-6">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 bg-blue-50">
                     <h2 class="font-bold text-lg text-blue-900 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -183,7 +180,6 @@ include 'header.php';
                 </div>
             </div>
 
-            <!-- SPLITS SET -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 bg-red-50">
                     <h2 class="font-bold text-lg text-red-900 flex items-center gap-2">
@@ -208,7 +204,6 @@ include 'header.php';
 
         </div>
 
-        <!-- Rechter Kolom: Slimme Suggesties -->
         <div class="lg:col-span-2">
             <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
                 ✨ Systeem Suggesties 
@@ -222,22 +217,18 @@ include 'header.php';
             <?php else: ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <?php foreach ($suggestions as $sug): 
-                        // Dwing sets van 2 of 4 af (bijv. 3 matchende banden = set van 2 voorstellen)
                         $set_size = $sug['match_count'] >= 4 ? 4 : 2;
                         
-                        // Knip het aantal QR codes af op precies de juiste grootte (2 of 4)
                         $qrs_array = explode(',', $sug['qr_ids']);
                         $qrs_to_use = array_slice($qrs_array, 0, $set_size);
                         $qr_string_to_use = implode(',', $qrs_to_use);
 
-                        // Maak de locaties netjes op (verwijder dubbelen als ze al in hetzelfde vak liggen)
                         $locs = array_unique(explode(',', $sug['locations']));
                         $loc_string = implode(' & ', $locs);
-                        $is_scattered = count($locs) > 1; // Liggen ze verspreid?
+                        $is_scattered = count($locs) > 1; 
                     ?>
                         <div class="bg-white rounded-xl shadow-sm border <?php echo $is_scattered ? 'border-amber-300' : 'border-slate-200'; ?> p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
                             
-                            <!-- Bovenkant: Info -->
                             <div>
                                 <div class="flex justify-between items-start mb-2">
                                     <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-800 text-white">
@@ -267,7 +258,6 @@ include 'header.php';
                                 </div>
                             </div>
                             
-                            <!-- Onderkant: Actie -->
                             <div class="mt-5 pt-4 border-t border-slate-100">
                                 <form method="POST" action="">
                                     <input type="hidden" name="qr_codes" value="<?php echo htmlspecialchars(str_replace(',', "\n", $qr_string_to_use)); ?>">
