@@ -30,15 +30,13 @@ if (empty($tires)) {
     die("Geen bandengegevens gevonden.");
 }
 
-// Helper functie om de EU-label kleur te bepalen o.b.v. profieldiepte
+// Helper functie om de EU-label kleur te bepalen o.b.v. profieldiepte (Nieuwe EU schaal A t/m E)
 function getTreadDepthColor($is_new, $depth) {
-    if ($is_new) return ['bg' => '#009640', 'letter' => 'A', 'text' => 'NIEUW']; // Donkergroen
-    if ($depth >= 7.0) return ['bg' => '#50B848', 'letter' => 'B', 'text' => $depth . ' mm']; // Lichtgroen
-    if ($depth >= 5.0) return ['bg' => '#C4D42A', 'letter' => 'C', 'text' => $depth . ' mm']; // Geelgroen
-    if ($depth >= 4.0) return ['bg' => '#F2C700', 'letter' => 'D', 'text' => $depth . ' mm']; // Geel
-    if ($depth >= 3.0) return ['bg' => '#F39200', 'letter' => 'E', 'text' => $depth . ' mm']; // Oranje
-    if ($depth >= 2.0) return ['bg' => '#E37222', 'letter' => 'F', 'text' => $depth . ' mm']; // Donkeroranje
-    return ['bg' => '#E3000F', 'letter' => 'G', 'text' => $depth . ' mm']; // Rood
+    if ($is_new || $depth >= 7.0) return ['bg' => '#009640', 'letter' => 'A', 'text' => $is_new ? 'NIEUW' : $depth . ' mm'];
+    if ($depth >= 5.5) return ['bg' => '#50B848', 'letter' => 'B', 'text' => $depth . ' mm'];
+    if ($depth >= 4.0) return ['bg' => '#F2C700', 'letter' => 'C', 'text' => $depth . ' mm'];
+    if ($depth >= 2.5) return ['bg' => '#F39200', 'letter' => 'D', 'text' => $depth . ' mm'];
+    return ['bg' => '#E3000F', 'letter' => 'E', 'text' => $depth . ' mm'];
 }
 ?>
 <!DOCTYPE html>
@@ -48,8 +46,10 @@ function getTreadDepthColor($is_new, $depth) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Labels Printen - Booij Banden</title>
     
+    <!-- QR Code Script -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
+    <!-- Tailwind CSS voor de App-Interface (verborgen tijdens printen) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -204,6 +204,7 @@ function getTreadDepthColor($is_new, $depth) {
 </head>
 <body class="pb-20">
 
+    <!-- DE SCHERM INTERFACE (Deze zie je niet op de print) -->
     <div class="no-print max-w-2xl mx-auto mt-10 mb-12 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-blue-600 px-6 py-4 flex items-center justify-between">
             <h2 class="text-white font-black text-xl flex items-center gap-2">
@@ -241,6 +242,7 @@ function getTreadDepthColor($is_new, $depth) {
         </div>
     </div>
 
+    <!-- HET ECHTE ETIKETTEN OVERZICHT -->
     <div class="flex flex-wrap justify-center gap-8">
         <?php foreach ($tires as $index => $tire): 
             // Bepaal de kleuren en letters o.b.v. profiel
@@ -252,43 +254,48 @@ function getTreadDepthColor($is_new, $depth) {
             <div class="eu-label-container">
                 <div class="eu-border">
                     
+                    <!-- Top: Merk & Model -->
                     <div class="eu-top-box">
                         <div class="eu-season"><?php echo htmlspecialchars($tire['season']); ?></div>
                         <div class="eu-brand"><?php echo htmlspecialchars($tire['brand']); ?></div>
                         <div class="eu-model"><?php echo htmlspecialchars($tire['model']); ?></div>
                     </div>
 
+                    <!-- Midden: Maat -->
                     <div class="eu-size">
                         <?php echo $tire['width'].'/'.$tire['ratio'].' R'.$tire['rim']; ?>
                     </div>
 
+                    <!-- Pijlen (Visualisatie Profieldiepte) -->
                     <div class="eu-middle-box">
                         <div style="font-size: 10px; font-weight: bold; color: #005A9C; margin-bottom: 2mm; text-transform: uppercase; border-bottom: 1px solid #005A9C; padding-bottom: 1mm;">Profieldiepte / Staat</div>
                         
                         <?php 
-                        // Hardgecodeerde HTML blokken voor de pijlen zodat ze 100% werken op print
+                        // Hardgecodeerde HTML blokken voor de pijlen (Nieuwe EU standaard A t/m E)
                         $bars = [
                             ['bg' => '#009640', 'l' => 'A'],
-                            ['bg' => '#C4D42A', 'l' => 'C'],
-                            ['bg' => '#F39200', 'l' => 'E'],
-                            ['bg' => '#E3000F', 'l' => 'G']
+                            ['bg' => '#50B848', 'l' => 'B'],
+                            ['bg' => '#F2C700', 'l' => 'C'],
+                            ['bg' => '#F39200', 'l' => 'D'],
+                            ['bg' => '#E3000F', 'l' => 'E']
                         ];
                         
                         foreach($bars as $bar) {
-                            $isActive = ($bar['l'] === $activeLetter || 
-                                        ($activeLetter === 'B' && $bar['l'] === 'A') || 
-                                        ($activeLetter === 'D' && $bar['l'] === 'C') ||
-                                        ($activeLetter === 'F' && $bar['l'] === 'E'));
+                            $isActive = ($bar['l'] === $activeLetter);
                                         
                             $width = $isActive ? '30mm' : '15mm';
                             ?>
                             
+                            <!-- 100% Inline CSS Pijl Constructie voor robuust printen -->
                             <div style="display: flex; align-items: center; height: 5mm; margin-bottom: 1.5mm;">
+                                <!-- Pijl Lichaam -->
                                 <div style="background-color: <?php echo $bar['bg']; ?>; width: <?php echo $width; ?>; height: 100%; color: white; font-weight: bold; font-size: 11px; padding-left: 2mm; display: flex; align-items: center; box-sizing: border-box;">
                                     <?php echo $bar['l']; ?>
                                 </div>
+                                <!-- Pijl Punt (Driehoek) -->
                                 <div style="width: 0; height: 0; border-top: 2.5mm solid transparent; border-bottom: 2.5mm solid transparent; border-left: 2.5mm solid <?php echo $bar['bg']; ?>;"></div>
                                 
+                                <!-- Resultaat Tekst (Alleen als actief) -->
                                 <?php if ($isActive): ?>
                                     <div style="margin-left: auto; font-size: 15px; font-weight: 900; color: <?php echo $activeColor; ?>;">
                                         <?php echo $activeText; ?>
@@ -299,6 +306,7 @@ function getTreadDepthColor($is_new, $depth) {
                         <?php } ?>
                     </div>
 
+                    <!-- Bottom: QR Code & ID -->
                     <div class="eu-bottom-box">
                         <div class="qr-wrapper" id="qr_<?php echo $index; ?>"></div>
                         <div class="qr-info">
@@ -310,6 +318,7 @@ function getTreadDepthColor($is_new, $depth) {
                 </div>
             </div>
             
+            <!-- Teken de QR code -->
             <script>
                 new QRCode(document.getElementById("qr_<?php echo $index; ?>"), {
                     text: "<?php echo htmlspecialchars($tire['qr_id']); ?>",
@@ -323,6 +332,7 @@ function getTreadDepthColor($is_new, $depth) {
         <?php endforeach; ?>
     </div>
 
+    <!-- Auto-print na kort wachten -->
     <script>
         window.onload = function() {
             setTimeout(function() {
