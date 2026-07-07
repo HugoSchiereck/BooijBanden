@@ -221,16 +221,21 @@ include 'header.php';
                                 &euro;<?php echo number_format($t['price'], 2, ',', '.'); ?>
                             </td>
                             <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
+                                
+                                <a href="print_label.php?id=<?php echo urlencode($t['qr_id']); ?>" target="_blank" class="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-1.5 rounded transition-colors" title="Print Label">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                                </a>
+
                                 <button type="button" 
                                     onclick="openEditModal('<?php echo htmlspecialchars($t['qr_id']); ?>', '<?php echo $t['price']; ?>', '<?php echo htmlspecialchars($t['location_id'] ?? ''); ?>')" 
-                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-1.5 rounded transition-colors">
+                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 p-1.5 rounded transition-colors" title="Bewerken">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                                 </button>
                                 
                                 <?php if ($t['status'] === 'voorraad'): ?>
                                 <form method="POST" class="inline" onsubmit="return confirm('Weet je zeker dat je band <?php echo htmlspecialchars($t['qr_id']); ?> wilt uitboeken?');">
                                     <input type="hidden" name="qr_id" value="<?php echo htmlspecialchars($t['qr_id']); ?>">
-                                    <button type="submit" name="delete_tire" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded transition-colors">
+                                    <button type="submit" name="delete_tire" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-1.5 rounded transition-colors" title="Uitboeken">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                                     </button>
                                 </form>
@@ -266,11 +271,11 @@ include 'header.php';
             </div>
             <div class="mb-5">
                 <label for="modal_price" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Verkoopprijs (&euro;)</label>
-                <input type="number" step="0.01" name="price" id="modal_price" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 font-bold text-slate-800 focus:outline-none">
+                <input type="number" step="0.01" name="price" id="modal_price" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="mb-6">
                 <label for="modal_location" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Magazijnlocatie (Optioneel)</label>
-                <input type="text" name="location_id" id="modal_location" placeholder="Bijv. 5B10" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 font-bold uppercase text-slate-800 focus:outline-none">
+                <input type="text" name="location_id" id="modal_location" placeholder="Bijv. 5B10" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 font-bold uppercase text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="flex justify-end gap-3">
                 <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors">Annuleren</button>
