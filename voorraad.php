@@ -218,7 +218,7 @@ include 'header.php';
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-black text-slate-900">
-                                &force;&euro;<?php echo number_format($t['price'], 2, ',', '.'); ?>
+                                &euro;<?php echo number_format($t['price'], 2, ',', '.'); ?>
                             </td>
                             <td class="px-6 py-3 whitespace-nowrap text-right text-sm font-medium flex justify-end gap-2">
                                 <button type="button" 
