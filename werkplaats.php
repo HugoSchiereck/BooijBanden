@@ -189,6 +189,8 @@ $pageTitle = "Kassa & Werkplaats";
 include 'header.php';
 ?>
 
+<script src="https://unpkg.com/html5-qrcode"></script>
+
 <main class="w-full max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
     
     <div class="mb-6 flex justify-between items-center w-full min-w-0">
@@ -204,14 +206,22 @@ include 'header.php';
     <div class="bg-white rounded-xl shadow-md border border-slate-200 p-5 mb-8 w-full min-w-0">
         <form method="POST" class="flex flex-col lg:flex-row gap-4 items-end w-full">
             <div class="flex-grow w-full">
-                <label for="scan_qr" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Snelkoppeling handscanner (Scan QR / Referentie)</label>
+                <div class="flex justify-between items-center mb-1">
+                    <label for="scan_qr" class="block text-xs font-bold uppercase tracking-wider text-slate-500">Bancode / Referentie</label>
+                    
+                    <button type="button" onclick="startCameraScanner()" class="text-blue-600 bg-blue-50 hover:bg-blue-100 font-bold px-2 py-1 rounded text-xs flex items-center gap-1 transition-colors">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                        Scan met Camera
+                    </button>
+                </div>
+                
                 <div class="relative rounded-lg shadow-sm w-full">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                         </svg>
                     </div>
-                    <input type="text" name="scan_qr" id="scan_qr" autofocus placeholder="Scan QR-code op de band..." class="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-mono font-bold tracking-wider text-slate-800">
+                    <input type="text" name="scan_qr" id="scan_qr" autofocus placeholder="Typ de code of gebruik de camera..." class="block w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-mono font-bold tracking-wider text-slate-800">
                 </div>
             </div>
             <div class="w-full lg:w-64">
@@ -222,7 +232,7 @@ include 'header.php';
                 <label for="license_plate" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Kenteken (Optioneel)</label>
                 <input type="text" name="license_plate" id="license_plate" placeholder="AB-123-C" class="block w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm font-bold uppercase tracking-wider text-slate-800">
             </div>
-            <button type="submit" name="create_scan_order" class="w-full lg:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-2.5 px-6 rounded-lg shadow transition-colors text-sm uppercase tracking-wider whitespace-nowrap">
+            <button type="submit" name="create_scan_order" id="submit_scan_btn" class="w-full lg:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-2.5 px-6 rounded-lg shadow transition-colors text-sm uppercase tracking-wider whitespace-nowrap">
                 Toevoegen
             </button>
         </form>
@@ -423,5 +433,63 @@ include 'header.php';
     <?php endif; ?>
 
 </main>
+
+<div id="cameraModal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-75 flex justify-center items-center z-50 px-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
+                Scan QR Code
+            </h3>
+            <button onclick="stopCameraScanner()" class="text-slate-400 hover:text-slate-600 transition-colors bg-slate-200 rounded p-1">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div id="qr-reader" style="width: 100%;" class="bg-black"></div>
+        <div class="p-4 text-center bg-slate-50">
+            <p class="text-sm text-slate-500">Richt de camera op de sticker. De code wordt automatisch ingevuld.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    let html5QrcodeScanner = null;
+
+    function startCameraScanner() {
+        // Open de modal
+        document.getElementById('cameraModal').classList.remove('hidden');
+        
+        // Start de camera configuratie
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader", 
+            { fps: 10, qrbox: {width: 250, height: 250} },
+            /* verbose= */ false
+        );
+        
+        // Koppel succes-actie
+        html5QrcodeScanner.render(onScanSuccess);
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Code succesvol gelezen!
+        
+        // 1. Sluit de scanner af
+        html5QrcodeScanner.clear();
+        document.getElementById('cameraModal').classList.add('hidden');
+        
+        // 2. Vul het tekstveld in
+        document.getElementById('scan_qr').value = decodedText;
+        
+        // 3. (Optioneel maar handig) Klik automatisch op de verzendknop
+        // document.getElementById('submit_scan_btn').click();
+    }
+
+    function stopCameraScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+        }
+        document.getElementById('cameraModal').classList.add('hidden');
+    }
+</script>
 
 <?php include 'footer.php'; ?>
